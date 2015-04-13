@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".Viewer">
+    <item android:id="@+id/action_print" android:title="Print Current Page"
+        android:orderInCategory="100" android:showAsAction="never" />
+</menu>
