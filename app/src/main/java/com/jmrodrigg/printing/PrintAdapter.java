@@ -21,21 +21,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Juan Manuel on 12/04/2015.
+ * Author: jrodriguezg
+ * Date: 12/04/2015.
  */
 public class PrintAdapter extends PrintDocumentAdapter {
 
     private Activity mParentActivity;
     private Renderer mRenderer;
+    int mTotalPages;
 
     private PrintedPdfDocument mDocument;
-    private final SparseIntArray mWrittenPages;
 
     public PrintAdapter(Activity act,Renderer rend) {
         mParentActivity = act;
         mRenderer = rend;
-
-        mWrittenPages = new SparseIntArray();
     }
 
     @Override
@@ -47,7 +46,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
             return;
         }
 
-        int pages = computePageCount(newAttributes);
+        int pages = computePageCount();
 
         if(pages > 0) {
             PrintDocumentInfo info = new PrintDocumentInfo
@@ -62,45 +61,53 @@ public class PrintAdapter extends PrintDocumentAdapter {
         }
     }
 
-    private int computePageCount(PrintAttributes printAttributes) {
+    private int computePageCount() {
         //Just print current page:
-        return 1;
+        mTotalPages = mRenderer.getPageCount();
+        return mTotalPages;
     }
 
     @Override
-    public void onWrite(PageRange[] pages, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
-        // --> START Print page 0;
-        PdfDocument.Page page = mDocument.startPage(0);
+    public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
 
-        int [] dimensions = mRenderer.openPage(0);
-        Bitmap bmp = Bitmap.createBitmap(dimensions[0],dimensions[1], Bitmap.Config.ARGB_8888);
-        mRenderer.renderPage(bmp,null,null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+        SparseIntArray writtenPages = new SparseIntArray();
 
-        Canvas c = page.getCanvas();
-        c.drawBitmap(bmp,0,0,null);
+        for(int i=0;i<mTotalPages;i++) {
+            if(containsPage(pageRanges,i)) {
+                // --> START Print page i;
+                PdfDocument.Page page = mDocument.startPage(i);
 
-        mDocument.finishPage(page);
+                int[] dimensions = mRenderer.openPage(i);
+                Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
+                mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
 
-        mWrittenPages.append(mWrittenPages.size(),0);
-        // --> END Print page 0.
+                Canvas c = page.getCanvas();
+                c.drawBitmap(bmp, 0, 0, null);
+
+                mDocument.finishPage(page);
+
+                writtenPages.append(writtenPages.size(), i);
+                // --> END Print page 0.
+            }
+        }
 
         try {
             mDocument.writeTo(new FileOutputStream(
-                    destination.getFileDescriptor()));;
+                    destination.getFileDescriptor()));
         }catch(IOException ex) {
             mDocument.close();
             mDocument = null;
         }
 
-        PageRange[] pageRanges = computeWrittenPageRanges(mWrittenPages);
-        callback.onWriteFinished(pageRanges);
+        PageRange[] writtenPageRange = computeWrittenPageRanges(writtenPages);
+        callback.onWriteFinished(writtenPageRange);
     }
 
     private PageRange[] computeWrittenPageRanges(SparseIntArray writtenPages) {
-        List<PageRange> pageRanges = new ArrayList<PageRange>();
+        List<PageRange> pageRanges = new ArrayList<>();
 
         int start = -1;
-        int end = -1;
+        int end;
         final int writtenPageCount = writtenPages.size();
         for (int i = 0; i < writtenPageCount; i++) {
             if (start < 0) {
@@ -114,11 +121,18 @@ public class PrintAdapter extends PrintDocumentAdapter {
             }
             PageRange pageRange = new PageRange(start, end);
             pageRanges.add(pageRange);
-            start = end = -1;
+            start = -1;
         }
 
         PageRange[] pageRangesArray = new PageRange[pageRanges.size()];
         pageRanges.toArray(pageRangesArray);
         return pageRangesArray;
+    }
+
+    private boolean containsPage(PageRange [] pageRanges,int numPage) {
+        for(PageRange pr:pageRanges) {
+            if((numPage >= pr.getStart()) && (numPage <= pr.getEnd())) return true;
+        }
+        return false;
     }
 }
