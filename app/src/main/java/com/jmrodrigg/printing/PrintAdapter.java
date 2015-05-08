@@ -3,6 +3,10 @@ package com.jmrodrigg.printing;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
@@ -25,7 +29,8 @@ import java.util.List;
  * Date: 12/04/2015.
  */
 public class PrintAdapter extends PrintDocumentAdapter {
-
+    public final int MarginWidth = 0;
+    public final int MarginHeight = 0;
     private Activity mParentActivity;
     private Renderer mRenderer;
     int mTotalPages;
@@ -78,11 +83,22 @@ public class PrintAdapter extends PrintDocumentAdapter {
                 PdfDocument.Page page = mDocument.startPage(i);
 
                 int[] dimensions = mRenderer.openPage(i);
-                Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
-                mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                Bitmap bmp = Bitmap.createBitmap(dimensions[0]-MarginHeight, dimensions[1]-MarginWidth, Bitmap.Config.ARGB_8888);
+                Matrix m = new Matrix();
+                m.setScale(1.0f,1.0f);
+                mRenderer.renderPage(bmp, new Rect(MarginHeight,MarginWidth,dimensions[0]-MarginWidth,dimensions[1]-MarginHeight), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+
+                //Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
+                //mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
 
                 Canvas c = page.getCanvas();
                 c.drawBitmap(bmp, 0, 0, null);
+
+                Paint myPaint = new Paint();
+                myPaint.setColor(Color.argb(20,1,0,0));
+                myPaint.setStrokeWidth(10);
+                c.drawRect(new Rect(MarginHeight,MarginWidth,dimensions[0]-MarginWidth,dimensions[1]-MarginHeight),myPaint);
+
 
                 mDocument.finishPage(page);
 
