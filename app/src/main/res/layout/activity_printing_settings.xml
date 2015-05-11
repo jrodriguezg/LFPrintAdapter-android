@@ -1,0 +1,89 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.jmrodrigg.printing.PrintingSettingsActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Print Mode"
+        android:id="@+id/lblPrintMode"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/lblPrintMode"
+        android:id="@+id/radioPrintMode"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fit to Page"
+            android:id="@+id/radioFit"
+            android:onClick="onPrintModeClicked"
+            android:checked="true"
+            android:gravity="center" />
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clip Content"
+            android:id="@+id/radioClip"
+            android:onClick="onPrintModeClicked"
+            android:checked="false"
+            android:layout_gravity="center" />
+
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Margins"
+        android:layout_below="@id/radioPrintMode"
+        android:id="@+id/lblMargins"
+        android:layout_alignParentStart="true" />
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/lblMargins"
+        android:id="@+id/radioMargins"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Margins"
+            android:id="@+id/radioNoMargins"
+            android:onClick="onMarginsModeClicked"
+            android:checked="false"
+            android:gravity="center" />
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Printer Margins"
+            android:id="@+id/radioPrinterMargins"
+            android:onClick="onMarginsModeClicked"
+            android:checked="true"
+            android:layout_gravity="center" />
+
+    </RadioGroup>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Print"
+        android:id="@+id/btn_print"
+        android:onClick="doPrint"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+
+</RelativeLayout>
