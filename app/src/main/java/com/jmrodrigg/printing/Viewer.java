@@ -39,10 +39,11 @@ public class Viewer extends Activity {
 
             File pathDir = Environment.getExternalStorageDirectory();
             String pdfFile = "/Download/AEC4_original.pdf";
-            Log.d("JMRODRIGG", pathDir.getAbsolutePath() + pdfFile);
+            ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pdfFile;
+            Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
 
         try {
-            File f = new File(pathDir,pdfFile);
+            File f = new File(((PrintingApplication)getApplication()).filepath);
 
             if(!f.exists()) this.finish();
 

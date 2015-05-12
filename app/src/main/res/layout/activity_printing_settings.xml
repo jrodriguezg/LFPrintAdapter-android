@@ -31,10 +31,19 @@
             android:gravity="center" />
 
         <RadioButton
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Clip Content"
             android:id="@+id/radioClip"
+            android:onClick="onPrintModeClicked"
+            android:checked="false"
+            android:layout_gravity="center" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="As is"
+            android:id="@+id/radioAsIs"
             android:onClick="onPrintModeClicked"
             android:checked="false"
             android:layout_gravity="center" />

@@ -19,8 +19,12 @@ import android.print.PrintDocumentInfo;
 import android.print.pdf.PrintedPdfDocument;
 import android.util.SparseIntArray;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +41,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
     private Activity mParentActivity;
     private Renderer mRenderer;
+    private String mPdfFile;
 
     int mMediaSize[];
     int mMargins[];
@@ -46,12 +51,14 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
     private PrintedPdfDocument mDocument;
 
-    public PrintAdapter(Activity act,Renderer rend) {
+    public PrintAdapter(Activity act) {
         mMediaSize = new int[2];
         mMargins = new int[4];
 
         mParentActivity = act;
-        mRenderer = rend;
+        mRenderer = ((PrintingApplication)act.getApplication()).renderer;
+        mPdfFile = ((PrintingApplication)act.getApplication()).filepath;
+
         print_mode = ((PrintingApplication)act.getApplication()).print_mode;
         margins_mode = ((PrintingApplication)act.getApplication()).margins_mode;
     }
@@ -115,52 +122,66 @@ public class PrintAdapter extends PrintDocumentAdapter {
         int marginWidth = mMargins[LEFT_MARGIN] + mMargins[RIGHT_MARGIN];
         int marginHeight = mMargins[TOP_MARGIN] + mMargins[BOTTOM_MARGIN];
 
-        for(int i=0;i<mTotalPages;i++) {
-            if(containsPage(pageRanges,i)) {
-                // --> START Print page i;
-                PdfDocument.Page page = mDocument.startPage(i);
+        try {
+            if(print_mode == PrintingApplication.PrintMode.PASS_PDF_AS_IS){
+                File f = new File(mPdfFile);
+                InputStream in = new FileInputStream(f);
+                OutputStream out = new FileOutputStream(destination.getFileDescriptor());
 
-                int[] dimensions = mRenderer.openPage(i);
-                Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
-                Matrix m = new Matrix();
+                copyFile(in, out);
+                in.close();
+                out.flush();
+                out.close();
 
-                switch (print_mode) {
-                    case PRINT_CLIP_CONTENT:
-                        m.setScale(1.0f,1.0f);
-                        mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN],mMargins[TOP_MARGIN],dimensions[0]-mMargins[RIGHT_MARGIN],dimensions[1]-mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-                        break;
-                    default:
-                    case PRINT_FIT_TO_PAGE:
-                        float widthScale = (float)(dimensions[0]-marginWidth)/(float)mMediaSize[0];
-                        float heightScale = (float)(dimensions[1]-marginHeight)/(float)mMediaSize[1];
-                        m.setScale(Math.min(widthScale,heightScale),Math.min(widthScale,heightScale));
-                        break;
-
+                for (int i = 0; i < mTotalPages; i++) {
+                    writtenPages.append(writtenPages.size(), i);
                 }
 
-                mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN],mMargins[TOP_MARGIN],dimensions[0]-mMargins[RIGHT_MARGIN],dimensions[1]-mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-                //Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
-                //mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+            }else {
+                for (int i = 0; i < mTotalPages; i++) {
+                    if (containsPage(pageRanges, i)) {
+                        // --> START Print page i;
+                        PdfDocument.Page page = mDocument.startPage(i);
 
-                Canvas c = page.getCanvas();
-                c.drawBitmap(bmp, 0, 0, null);
+                        int[] dimensions = mRenderer.openPage(i);
+                        Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
+                        Matrix m = new Matrix();
 
-                Paint myPaint = new Paint();
-                myPaint.setColor(Color.argb(20,1,0,0));
-                myPaint.setStrokeWidth(10);
-                c.drawRect(new Rect(mMargins[LEFT_MARGIN],mMargins[TOP_MARGIN],dimensions[0]-mMargins[RIGHT_MARGIN],dimensions[1]-mMargins[BOTTOM_MARGIN]),myPaint);
+                        switch (print_mode) {
+                            case PRINT_CLIP_CONTENT:
+                                m.setScale(1.0f, 1.0f);
+                                mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                                break;
+                            default:
+                            case PRINT_FIT_TO_PAGE:
+                                float widthScale = (float) (dimensions[0] - marginWidth) / (float) mMediaSize[0];
+                                float heightScale = (float) (dimensions[1] - marginHeight) / (float) mMediaSize[1];
+                                m.setScale(Math.min(widthScale, heightScale), Math.min(widthScale, heightScale));
+                                break;
+                        }
+
+                        mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                        //Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
+                        //mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+
+                        Canvas c = page.getCanvas();
+                        c.drawBitmap(bmp, 0, 0, null);
+
+                        Paint myPaint = new Paint();
+                        myPaint.setColor(Color.argb(20, 1, 0, 0));
+                        myPaint.setStrokeWidth(10);
+                        c.drawRect(new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), myPaint);
 
 
-                mDocument.finishPage(page);
+                        mDocument.finishPage(page);
 
-                writtenPages.append(writtenPages.size(), i);
-                // --> END Print page 0.
+                        writtenPages.append(writtenPages.size(), i);
+                        // --> END Print page 0.
+                    }
+                }
+                mDocument.writeTo(new FileOutputStream(
+                        destination.getFileDescriptor()));
             }
-        }
-
-        try {
-            mDocument.writeTo(new FileOutputStream(
-                    destination.getFileDescriptor()));
         }catch(IOException ex) {
             mDocument.close();
             mDocument = null;
@@ -168,6 +189,14 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
         PageRange[] writtenPageRange = computeWrittenPageRanges(writtenPages);
         callback.onWriteFinished(writtenPageRange);
+    }
+
+    private void copyFile(InputStream in, OutputStream out) throws IOException{
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1) {
+            out.write(buffer,0,read);
+        }
     }
 
     private PageRange[] computeWrittenPageRanges(SparseIntArray writtenPages) {

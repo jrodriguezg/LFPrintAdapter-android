@@ -10,9 +10,10 @@ public class PrintingApplication extends Application {
 
     // PDF Renderer:
     public Renderer renderer;
+    public String filepath;
 
     // Printing settings:
-    public enum PrintMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT }
+    public enum PrintMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
     public enum MarginsMode { NO_MARGINS, PRINTER_MARGINS }
 
     public PrintMode print_mode;

@@ -35,12 +35,20 @@ public class PrintingSettingsActivity extends Activity {
         boolean checked = ((RadioButton) v).isChecked();
 
         switch(v.getId()) {
+            // Send exactly the original document. No processing:
+            case R.id.radioAsIs:
+                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PASS_PDF_AS_IS;
+                break;
+            // Clip the original document to the paper size selected:
             case R.id.radioClip:
                 if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PRINT_CLIP_CONTENT;
                 break;
+            // Fit the original document to the paper size selected:
+            default:
             case R.id.radioFit:
                 if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PRINT_FIT_TO_PAGE;
                 break;
+
         }
     }
 
@@ -61,6 +69,6 @@ public class PrintingSettingsActivity extends Activity {
         PrintManager printManager = (PrintManager) getSystemService(
                 Context.PRINT_SERVICE);
 
-        printManager.print("test.pdf",new PrintAdapter(this,((PrintingApplication)getApplication()).renderer),null);
+        printManager.print("test.pdf",new PrintAdapter(this),null);
     }
 }
