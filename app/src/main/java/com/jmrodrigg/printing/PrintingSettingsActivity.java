@@ -2,8 +2,11 @@ package com.jmrodrigg.printing;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.print.PrintManager;
+import android.support.v4.print.PrintHelper;
 import android.view.Menu;
 import android.view.View;
 import android.widget.RadioButton;
@@ -20,6 +23,11 @@ public class PrintingSettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_printing_settings);
+
+        if(((PrintingApplication)getApplication()).objectType == PrintingApplication.JobType.IMAGE){
+            RadioButton btn = (RadioButton) findViewById(R.id.radioAsIs);
+            btn.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -66,9 +74,33 @@ public class PrintingSettingsActivity extends Activity {
     }
 
     public void doPrint(View v) {
-        PrintManager printManager = (PrintManager) getSystemService(
-                Context.PRINT_SERVICE);
+        switch (((PrintingApplication)getApplication()).objectType) {
+            case DOCUMENT:
+                PrintManager printManager = (PrintManager) getSystemService(
+                        Context.PRINT_SERVICE);
+                printManager.print("document",new PrintAdapter(this),null);
+                break;
 
-        printManager.print("test.pdf",new PrintAdapter(this),null);
+            case IMAGE:
+                try{
+                    PrintHelper pHelper = new PrintHelper(this);
+
+                    if(((PrintingApplication)getApplication()).print_mode == PrintingApplication.PrintMode.PRINT_CLIP_CONTENT) {
+                        pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
+                    } else if(((PrintingApplication)getApplication()).print_mode == PrintingApplication.PrintMode.PRINT_FIT_TO_PAGE) {
+                        pHelper.setScaleMode(PrintHelper.SCALE_MODE_FIT);
+                    } else {
+                        throw new Exception("Print Mode not supported");
+                    }
+
+                    Bitmap bmp = BitmapFactory.decodeFile(((PrintingApplication) getApplication()).filepath);
+                    pHelper.printBitmap("image", bmp);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+        }
+
     }
 }

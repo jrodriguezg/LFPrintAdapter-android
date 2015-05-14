@@ -15,9 +15,11 @@ public class PrintingApplication extends Application {
     // Printing settings:
     public enum PrintMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
     public enum MarginsMode { NO_MARGINS, PRINTER_MARGINS }
+    public enum JobType { DOCUMENT, IMAGE }
 
     public PrintMode print_mode;
     public MarginsMode margins_mode;
+    public JobType objectType;
 
     @Override
     public void onCreate() {
@@ -28,5 +30,6 @@ public class PrintingApplication extends Application {
     private void init() {
         print_mode = PrintMode.PRINT_FIT_TO_PAGE;
         margins_mode = MarginsMode.PRINTER_MARGINS;
+        objectType = JobType.DOCUMENT;
     }
 }

@@ -3,6 +3,7 @@ package com.jmrodrigg.printing;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
@@ -23,9 +24,13 @@ import java.io.IOException;
  * Date: 12/04/2015.
  */
 public class Viewer extends Activity {
+    private final static String doc = "/Download/AEC4_original.pdf";
+    private final static String img = "/Download/tron.jpg";
 
-    ImageView mView;
-    int mCurrentPage;
+    private ImageView mView;
+    private int mCurrentPage;
+
+    private Menu mMenu;
 
     Button mPrevButton, mNextButton;
 
@@ -34,13 +39,32 @@ public class Viewer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
 
-        String path = "example.pdf";
-        Log.d("JMRODRIGG", path);
 
-            File pathDir = Environment.getExternalStorageDirectory();
-            String pdfFile = "/Download/AEC4_original.pdf";
-            ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pdfFile;
-            Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
+        // ImageView:
+        mView = (ImageView) findViewById(R.id.imageView);
+
+        // Buttons:
+        mPrevButton = (Button) findViewById(R.id.prevPage);
+        mNextButton = (Button) findViewById(R.id.nextPage);
+
+        // Content Type:
+        switch(((PrintingApplication)getApplication()).objectType) {
+            case DOCUMENT:
+                renderDocument(doc);
+                break;
+            case IMAGE:
+                renderImage(img);
+                break;
+        }
+    }
+
+    private void renderDocument(String pPath) {
+        ((PrintingApplication)getApplication()).objectType = PrintingApplication.JobType.DOCUMENT;
+
+        File pathDir = Environment.getExternalStorageDirectory();
+        ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pPath;
+
+        Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
 
         try {
             File f = new File(((PrintingApplication)getApplication()).filepath);
@@ -56,11 +80,8 @@ public class Viewer extends Activity {
 
         mCurrentPage = 0;
 
-        //ImageView:
-        mView = (ImageView) findViewById(R.id.imageView);
-
         // Buttons:
-        mPrevButton = (Button) findViewById(R.id.prevPage);
+        mPrevButton.setVisibility(View.VISIBLE);
         mPrevButton.setEnabled(false);
         mPrevButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +92,7 @@ public class Viewer extends Activity {
                 renderPage();
             }
         });
-        mNextButton = (Button) findViewById(R.id.nextPage);
+        mPrevButton.setVisibility(View.VISIBLE);
         mNextButton.setEnabled(((PrintingApplication)getApplication()).renderer.getPageCount() > 1);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,7 +103,6 @@ public class Viewer extends Activity {
                 renderPage();
             }
         });
-
 
         // Render first page:
         renderPage();
@@ -99,26 +119,52 @@ public class Viewer extends Activity {
         mView.setImageBitmap(bmp);
     }
 
+    private void renderImage(String pPath) {
+        ((PrintingApplication)getApplication()).objectType = PrintingApplication.JobType.IMAGE;
+
+        File pathDir = Environment.getExternalStorageDirectory();
+        ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pPath;
+
+        Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
+
+        Bitmap bmp = BitmapFactory.decodeFile(((PrintingApplication)getApplication()).filepath);
+        mView.setImageBitmap(bmp);
+
+        mPrevButton.setVisibility(View.GONE);
+        mNextButton.setVisibility(View.GONE);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_viewer, menu);
+        mMenu = menu;
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public boolean onOptionsItemSelected(MenuItem selectedItem) {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_print) {
-            Intent intent = new Intent(this,PrintingSettingsActivity.class);
-            startActivity(intent);
+        switch(selectedItem.getItemId()) {
+            case R.id.action_print:
+                Intent intent = new Intent(this,PrintingSettingsActivity.class);
+                startActivity(intent);
+                break;
+
+            case R.id.action_image:
+                selectedItem.setVisible(false);
+                mMenu.findItem(R.id.action_doc).setVisible(true);
+
+                renderImage(img);
+                break;
+
+            case R.id.action_doc:
+                selectedItem.setVisible(false);
+                mMenu.findItem(R.id.action_image).setVisible(true);
+
+                renderDocument(doc);
+                break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(selectedItem);
     }
 }
