@@ -123,7 +123,7 @@ public class FilePickerActivity extends ListActivity {
                     } else if (fileName.toUpperCase().endsWith(".JPG") || file.getName().toUpperCase().endsWith(".JPEG")) {
                         // JPG:
                         resource = R.drawable.type_jpg;
-                    } else if (fileName.toUpperCase().endsWith(".ONG")) {
+                    } else if (fileName.toUpperCase().endsWith(".PNG")) {
                         // PNG:
                         resource = R.drawable.type_png;
                     }
