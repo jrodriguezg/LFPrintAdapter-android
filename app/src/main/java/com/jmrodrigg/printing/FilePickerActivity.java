@@ -13,7 +13,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,7 +129,6 @@ public class FilePickerActivity extends ListActivity {
                     }
 
                     // If file, set size:
-                    DecimalFormat df = new DecimalFormat();
                     if (size <= 1024) txtSize.setText(getResources().getString(R.string.file_size_bytes,size));
                     else if (size <= (1024*1024)) txtSize.setText(getResources().getString(R.string.file_size_Kbytes,String.format(Locale.getDefault(),"%.2f",(float)size/1024)));
                     else txtSize.setText(getResources().getString(R.string.file_size_Mbytes,String.format(Locale.getDefault(),"%.2f",(float)size/(1024*1024))));
