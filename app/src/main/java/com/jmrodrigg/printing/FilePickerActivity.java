@@ -13,14 +13,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class FilePickerActivity extends ListActivity {
-    private static final String FOLDER = "folder";
 
     File rootFolder = Environment.getExternalStorageDirectory();
     File currentFolder;
@@ -30,13 +31,10 @@ public class FilePickerActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_file_picker);
 
         currentFolder = rootFolder;
 
         fillList();
-
-        this.setListAdapter(new FileListAdapter(getBaseContext(),R.layout.file_item,childrenList));
     }
 
     @Override
@@ -82,7 +80,6 @@ public class FilePickerActivity extends ListActivity {
         Context mContext;
         int mResourceId;
         List<File> mObjects;
-
 
         public FileListAdapter(Context context, int resource, List<File> objects) {
             super(context, resource, objects);
@@ -133,9 +130,10 @@ public class FilePickerActivity extends ListActivity {
                     }
 
                     // If file, set size:
-                    if (size <= 1024) txtSize.setText(size + " Bytes.");
-                    else if (size <= (1024*1024)) txtSize.setText(((float)size/1024) + " KBytes.");
-                    else txtSize.setText(((float)size/(1024*1024)) + " MBytes.");
+                    DecimalFormat df = new DecimalFormat();
+                    if (size <= 1024) txtSize.setText(getResources().getString(R.string.file_size_bytes,size));
+                    else if (size <= (1024*1024)) txtSize.setText(getResources().getString(R.string.file_size_Kbytes,String.format(Locale.getDefault(),"%.2f",(float)size/1024)));
+                    else txtSize.setText(getResources().getString(R.string.file_size_Mbytes,String.format(Locale.getDefault(),"%.2f",(float)size/(1024*1024))));
                 }
 
                 // Set Icon:
@@ -143,7 +141,7 @@ public class FilePickerActivity extends ListActivity {
                 // Set name:
                 txtName.setText(fileName);
                 // Set Last Modified date:
-                SimpleDateFormat sd = new SimpleDateFormat("dd/MM/yyyy - hh:mm");
+                SimpleDateFormat sd = new SimpleDateFormat("dd/MM/yyyy - hh:mm",Locale.getDefault());
                 txtDate.setText(sd.format(new Date(lastModified)));
 
             }
