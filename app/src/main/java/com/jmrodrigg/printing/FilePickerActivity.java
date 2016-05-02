@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -62,16 +63,18 @@ public class FilePickerActivity extends ListActivity {
     }
 
     private void fillList() {
-        this.setTitle(currentFolder.getName());
+        String title = generateFolderTitle(currentFolder);
+        this.setTitle(title.isEmpty()?"/":title);
 
-        File[] children = currentFolder.listFiles();
         childrenList = new ArrayList<>();
-
-        for (int i=0;i<children.length;i++) {
-            childrenList.add(children[i]);
-        }
+        Collections.addAll(childrenList, currentFolder.listFiles());
 
         this.setListAdapter(new FileListAdapter(getBaseContext(),R.layout.file_item,childrenList));
+    }
+
+    private String generateFolderTitle(File folder) {
+        if (folder.equals(rootFolder)) return "";
+        else return generateFolderTitle(folder.getParentFile()) + "/" + folder.getName();
     }
 
     class FileListAdapter extends ArrayAdapter<File> {
@@ -87,8 +90,6 @@ public class FilePickerActivity extends ListActivity {
             mContext = context;
             mResourceId = resource;
             mObjects = objects;
-
-
         }
 
         @Override
