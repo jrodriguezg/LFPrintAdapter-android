@@ -8,4 +8,6 @@
     <string name="file_size_bytes">%1$s B</string>
     <string name="file_size_Kbytes">%1$s KB</string>
     <string name="file_size_Mbytes">%1$s MB</string>
+
+    <string name="unsupported_mime_type">File extension not supported.</string>
 </resources>
