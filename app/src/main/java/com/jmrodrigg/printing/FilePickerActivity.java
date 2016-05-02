@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -45,6 +46,16 @@ public class FilePickerActivity extends ListActivity {
         if (selection.isDirectory()) {
             currentFolder = selection;
             fillList();
+        } else {
+            String fileName = selection.getName();
+            if (fileName.toUpperCase().endsWith(".PDF")
+                || fileName.toUpperCase().endsWith(".JPG")
+                || fileName.toUpperCase().endsWith(".JPEG")
+                || fileName.toUpperCase().endsWith(".PNG")) {
+
+                // TODO link with Viewer activity.
+
+            } else Toast.makeText(FilePickerActivity.this, getString(R.string.unsupported_mime_type), Toast.LENGTH_SHORT).show();
         }
 
     }
