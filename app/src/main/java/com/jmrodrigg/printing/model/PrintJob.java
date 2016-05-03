@@ -6,7 +6,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by jrodriguezg on 3/05/16.
+ * Author: jrodriguezg
+ * Date: 03/05/2016.
  */
 public class PrintJob implements Parcelable {
     private String mUri;

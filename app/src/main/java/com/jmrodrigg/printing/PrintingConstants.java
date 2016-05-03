@@ -1,7 +1,8 @@
 package com.jmrodrigg.printing;
 
 /**
- * Created by jrodriguezg on 3/05/16.
+ * Author: jrodriguezg
+ * Date: 03/05/2016.
  */
 public class PrintingConstants {
 

@@ -30,6 +30,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Author: jrodriguezg
+ * Date: 02/05/2016.
+ */
 public class FilePickerActivity extends ListActivity {
 
     File rootFolder = Environment.getExternalStorageDirectory();
