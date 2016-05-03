@@ -1,9 +1,15 @@
 package com.jmrodrigg.printing;
 
+import android.Manifest;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +29,8 @@ import java.util.Locale;
 
 public class FilePickerActivity extends ListActivity {
 
+    static final int REQ_EXT_STORAGE = 1;
+
     File rootFolder = Environment.getExternalStorageDirectory();
     File currentFolder;
 
@@ -34,7 +42,27 @@ public class FilePickerActivity extends ListActivity {
 
         currentFolder = rootFolder;
 
-        fillList();
+        // Check permissions to READ External storage:
+        if(Build.VERSION.SDK_INT >= 23) {
+            if ((ContextCompat.checkSelfPermission(FilePickerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},REQ_EXT_STORAGE);
+            } else {
+                fillList();
+            }
+        } else {
+            fillList();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQ_EXT_STORAGE:
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    fillList();
+                } else Toast.makeText(FilePickerActivity.this, getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                return;
+        }
     }
 
     @Override
@@ -49,13 +77,14 @@ public class FilePickerActivity extends ListActivity {
         } else {
             String fileName = selection.getName();
             if (fileName.toUpperCase().endsWith(".PDF")
-                || fileName.toUpperCase().endsWith(".JPG")
-                || fileName.toUpperCase().endsWith(".JPEG")
-                || fileName.toUpperCase().endsWith(".PNG")) {
+                    || fileName.toUpperCase().endsWith(".JPG")
+                    || fileName.toUpperCase().endsWith(".JPEG")
+                    || fileName.toUpperCase().endsWith(".PNG")) {
 
                 // TODO link with Viewer activity.
 
-            } else Toast.makeText(FilePickerActivity.this, getString(R.string.unsupported_mime_type), Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(FilePickerActivity.this, getString(R.string.unsupported_mime_type), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -72,12 +101,12 @@ public class FilePickerActivity extends ListActivity {
 
     private void fillList() {
         String title = generateFolderTitle(currentFolder);
-        this.setTitle(title.isEmpty()?"/":title);
+        this.setTitle(title.isEmpty() ? "/" : title);
 
         childrenList = new ArrayList<>();
         Collections.addAll(childrenList, currentFolder.listFiles());
 
-        this.setListAdapter(new FileListAdapter(getBaseContext(),R.layout.file_item,childrenList));
+        this.setListAdapter(new FileListAdapter(getBaseContext(), R.layout.file_item, childrenList));
     }
 
     private String generateFolderTitle(File folder) {
@@ -103,11 +132,11 @@ public class FilePickerActivity extends ListActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
 
             ImageView imgIcon;
-            TextView txtName,txtSize,txtDate;
+            TextView txtName, txtSize, txtDate;
 
             if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(mResourceId,null);
+                convertView = inflater.inflate(mResourceId, null);
             }
 
             File file = mObjects.get(position);
@@ -140,9 +169,12 @@ public class FilePickerActivity extends ListActivity {
                     }
 
                     // If file, set size:
-                    if (size <= 1024) txtSize.setText(getResources().getString(R.string.file_size_bytes,size));
-                    else if (size <= (1024*1024)) txtSize.setText(getResources().getString(R.string.file_size_Kbytes,String.format(Locale.getDefault(),"%.2f",(float)size/1024)));
-                    else txtSize.setText(getResources().getString(R.string.file_size_Mbytes,String.format(Locale.getDefault(),"%.2f",(float)size/(1024*1024))));
+                    if (size <= 1024)
+                        txtSize.setText(getResources().getString(R.string.file_size_bytes, size));
+                    else if (size <= (1024 * 1024))
+                        txtSize.setText(getResources().getString(R.string.file_size_Kbytes, String.format(Locale.getDefault(), "%.2f", (float) size / 1024)));
+                    else
+                        txtSize.setText(getResources().getString(R.string.file_size_Mbytes, String.format(Locale.getDefault(), "%.2f", (float) size / (1024 * 1024))));
                 }
 
                 // Set Icon:
@@ -150,7 +182,7 @@ public class FilePickerActivity extends ListActivity {
                 // Set name:
                 txtName.setText(fileName);
                 // Set Last Modified date:
-                SimpleDateFormat sd = new SimpleDateFormat("dd/MM/yyyy - hh:mm",Locale.getDefault());
+                SimpleDateFormat sd = new SimpleDateFormat("dd/MM/yyyy - hh:mm", Locale.getDefault());
                 txtDate.setText(sd.format(new Date(lastModified)));
 
             }
