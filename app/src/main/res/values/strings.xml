@@ -11,4 +11,6 @@
 
     <string name="unsupported_mime_type">File extension not supported.</string>
     <string name="permission_not_granted">Need to accept READ_EXTERNAL_STORAGE permission.</string>
+
+    <string name="menu_item_print">Print</string>
 </resources>

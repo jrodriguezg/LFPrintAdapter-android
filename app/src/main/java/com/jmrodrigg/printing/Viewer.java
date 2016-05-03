@@ -22,14 +22,9 @@ import java.io.IOException;
  * Date: 12/04/2015.
  */
 public class Viewer extends Activity {
-    private final static String doc = "/Download/AEC4_original.pdf";
-    private final static String img = "/Download/tron.jpg";
 
     private ImageView mView;
     private int mCurrentPage;
-
-    private Menu mMenu;
-
     Button mPrevButton, mNextButton;
 
     @Override
@@ -125,7 +120,6 @@ public class Viewer extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_viewer, menu);
-        mMenu = menu;
         return true;
     }
 
@@ -136,20 +130,6 @@ public class Viewer extends Activity {
             case R.id.action_print:
                 Intent intent = new Intent(this,PrintingSettingsActivity.class);
                 startActivity(intent);
-                break;
-
-            case R.id.action_image:
-                selectedItem.setVisible(false);
-                mMenu.findItem(R.id.action_doc).setVisible(true);
-
-                renderImage(img);
-                break;
-
-            case R.id.action_doc:
-                selectedItem.setVisible(false);
-                mMenu.findItem(R.id.action_image).setVisible(true);
-
-                renderDocument(doc);
                 break;
         }
 
