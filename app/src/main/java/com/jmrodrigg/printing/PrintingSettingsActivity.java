@@ -24,7 +24,7 @@ public class PrintingSettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_printing_settings);
 
-        if(((PrintingApplication)getApplication()).objectType == PrintingApplication.JobType.IMAGE){
+        if(((PrintingApplication)getApplication()).objectType == PrintingConstants.JobType.IMAGE){
             RadioButton btn = (RadioButton) findViewById(R.id.radioAsIs);
             btn.setVisibility(View.GONE);
         }
@@ -45,16 +45,16 @@ public class PrintingSettingsActivity extends Activity {
         switch(v.getId()) {
             // Send exactly the original document. No processing:
             case R.id.radioAsIs:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PASS_PDF_AS_IS;
+                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PASS_PDF_AS_IS;
                 break;
             // Clip the original document to the paper size selected:
             case R.id.radioClip:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PRINT_CLIP_CONTENT;
+                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PRINT_CLIP_CONTENT;
                 break;
             // Fit the original document to the paper size selected:
             default:
             case R.id.radioFit:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingApplication.PrintMode.PRINT_FIT_TO_PAGE;
+                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PRINT_FIT_TO_PAGE;
                 break;
 
         }
@@ -65,10 +65,10 @@ public class PrintingSettingsActivity extends Activity {
 
         switch(v.getId()) {
             case R.id.radioNoMargins:
-                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingApplication.MarginsMode.NO_MARGINS;
+                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingConstants.MarginsMode.NO_MARGINS;
                 break;
             case R.id.radioPrinterMargins:
-                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingApplication.MarginsMode.PRINTER_MARGINS;
+                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingConstants.MarginsMode.PRINTER_MARGINS;
                 break;
         }
     }
@@ -85,9 +85,9 @@ public class PrintingSettingsActivity extends Activity {
                 try{
                     PrintHelper pHelper = new PrintHelper(this);
 
-                    if(((PrintingApplication)getApplication()).print_mode == PrintingApplication.PrintMode.PRINT_CLIP_CONTENT) {
+                    if(((PrintingApplication)getApplication()).print_mode == PrintingConstants.PrintMode.PRINT_CLIP_CONTENT) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
-                    } else if(((PrintingApplication)getApplication()).print_mode == PrintingApplication.PrintMode.PRINT_FIT_TO_PAGE) {
+                    } else if(((PrintingApplication)getApplication()).print_mode == PrintingConstants.PrintMode.PRINT_FIT_TO_PAGE) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FIT);
                     } else {
                         throw new Exception("Print Mode not supported");

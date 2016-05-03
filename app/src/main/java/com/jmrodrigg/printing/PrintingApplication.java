@@ -12,14 +12,9 @@ public class PrintingApplication extends Application {
     public Renderer renderer;
     public String filepath;
 
-    // Printing settings:
-    public enum PrintMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
-    public enum MarginsMode { NO_MARGINS, PRINTER_MARGINS }
-    public enum JobType { DOCUMENT, IMAGE }
-
-    public PrintMode print_mode;
-    public MarginsMode margins_mode;
-    public JobType objectType;
+    public PrintingConstants.PrintMode print_mode;
+    public PrintingConstants.MarginsMode margins_mode;
+    public PrintingConstants.JobType objectType;
 
     @Override
     public void onCreate() {
@@ -28,8 +23,8 @@ public class PrintingApplication extends Application {
     }
 
     private void init() {
-        print_mode = PrintMode.PRINT_FIT_TO_PAGE;
-        margins_mode = MarginsMode.PRINTER_MARGINS;
-        objectType = JobType.DOCUMENT;
+        print_mode = PrintingConstants.PrintMode.PRINT_FIT_TO_PAGE;
+        margins_mode = PrintingConstants.MarginsMode.PRINTER_MARGINS;
+        objectType = PrintingConstants.JobType.DOCUMENT;
     }
 }

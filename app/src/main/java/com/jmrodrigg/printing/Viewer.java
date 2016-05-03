@@ -37,8 +37,8 @@ public class Viewer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
 
-        String filename = getIntent().getStringExtra("file");
-        PrintingApplication.JobType type = (PrintingApplication.JobType) getIntent().getSerializableExtra("type");
+        String filename = getIntent().getStringExtra(PrintingConstants.FILE_URI);
+        PrintingConstants.JobType type = (PrintingConstants.JobType) getIntent().getSerializableExtra(PrintingConstants.FILE_MIMETYPE);
 
         // ImageView:
         mView = (ImageView) findViewById(R.id.imageView);
@@ -59,7 +59,7 @@ public class Viewer extends Activity {
     }
 
     private void renderDocument(String filename) {
-        ((PrintingApplication)getApplication()).objectType = PrintingApplication.JobType.DOCUMENT;
+        ((PrintingApplication)getApplication()).objectType = PrintingConstants.JobType.DOCUMENT;
 
         try {
             File f = new File(filename);

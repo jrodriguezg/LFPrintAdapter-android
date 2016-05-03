@@ -34,11 +34,6 @@ import java.util.List;
  */
 public class PrintAdapter extends PrintDocumentAdapter {
 
-    private static final int LEFT_MARGIN    = 0;
-    private static final int TOP_MARGIN     = 1;
-    private static final int RIGHT_MARGIN   = 2;
-    private static final int BOTTOM_MARGIN  = 3;
-
     private Activity mParentActivity;
     private Renderer mRenderer;
     private String mPdfFile;
@@ -46,8 +41,8 @@ public class PrintAdapter extends PrintDocumentAdapter {
     int mMediaSize[];
     int mMargins[];
     int mTotalPages;
-    PrintingApplication.PrintMode print_mode;
-    PrintingApplication.MarginsMode margins_mode;
+    PrintingConstants.PrintMode print_mode;
+    PrintingConstants.MarginsMode margins_mode;
 
     private PrintedPdfDocument mDocument;
 
@@ -79,17 +74,17 @@ public class PrintAdapter extends PrintDocumentAdapter {
         // store the margins:
         switch(margins_mode){
             case NO_MARGINS:
-                mMargins[LEFT_MARGIN]   = 0;
-                mMargins[TOP_MARGIN]    = 0;
-                mMargins[RIGHT_MARGIN]  = 0;
-                mMargins[BOTTOM_MARGIN] = 0;
+                mMargins[PrintingConstants.LEFT_MARGIN]   = 0;
+                mMargins[PrintingConstants.TOP_MARGIN]    = 0;
+                mMargins[PrintingConstants.RIGHT_MARGIN]  = 0;
+                mMargins[PrintingConstants.BOTTOM_MARGIN] = 0;
                 break;
             default:
             case PRINTER_MARGINS:
-                mMargins[LEFT_MARGIN]   = newAttributes.getMinMargins().getLeftMils();
-                mMargins[TOP_MARGIN]    = newAttributes.getMinMargins().getTopMils();
-                mMargins[RIGHT_MARGIN]  = newAttributes.getMinMargins().getRightMils();
-                mMargins[BOTTOM_MARGIN] = newAttributes.getMinMargins().getBottomMils();
+                mMargins[PrintingConstants.LEFT_MARGIN]   = newAttributes.getMinMargins().getLeftMils();
+                mMargins[PrintingConstants.TOP_MARGIN]    = newAttributes.getMinMargins().getTopMils();
+                mMargins[PrintingConstants.RIGHT_MARGIN]  = newAttributes.getMinMargins().getRightMils();
+                mMargins[PrintingConstants.BOTTOM_MARGIN] = newAttributes.getMinMargins().getBottomMils();
                 break;
         }
 
@@ -119,11 +114,11 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
         SparseIntArray writtenPages = new SparseIntArray();
 
-        int marginWidth = mMargins[LEFT_MARGIN] + mMargins[RIGHT_MARGIN];
-        int marginHeight = mMargins[TOP_MARGIN] + mMargins[BOTTOM_MARGIN];
+        int marginWidth = mMargins[PrintingConstants.LEFT_MARGIN] + mMargins[PrintingConstants.RIGHT_MARGIN];
+        int marginHeight = mMargins[PrintingConstants.TOP_MARGIN] + mMargins[PrintingConstants.BOTTOM_MARGIN];
 
         try {
-            if(print_mode == PrintingApplication.PrintMode.PASS_PDF_AS_IS){
+            if(print_mode == PrintingConstants.PrintMode.PASS_PDF_AS_IS){
                 File f = new File(mPdfFile);
                 InputStream in = new FileInputStream(f);
                 OutputStream out = new FileOutputStream(destination.getFileDescriptor());
@@ -150,7 +145,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
                         switch (print_mode) {
                             case PRINT_CLIP_CONTENT:
                                 m.setScale(1.0f, 1.0f);
-                                mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                                mRenderer.renderPage(bmp, new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
                                 break;
                             default:
                             case PRINT_FIT_TO_PAGE:
@@ -160,7 +155,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
                                 break;
                         }
 
-                        mRenderer.renderPage(bmp, new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                        mRenderer.renderPage(bmp, new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
                         //Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
                         //mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
 
@@ -170,7 +165,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
                         Paint myPaint = new Paint();
                         myPaint.setColor(Color.argb(20, 1, 0, 0));
                         myPaint.setStrokeWidth(10);
-                        c.drawRect(new Rect(mMargins[LEFT_MARGIN], mMargins[TOP_MARGIN], dimensions[0] - mMargins[RIGHT_MARGIN], dimensions[1] - mMargins[BOTTOM_MARGIN]), myPaint);
+                        c.drawRect(new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), myPaint);
 
 
                         mDocument.finishPage(page);

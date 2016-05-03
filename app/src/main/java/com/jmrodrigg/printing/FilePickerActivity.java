@@ -30,8 +30,6 @@ import java.util.Locale;
 
 public class FilePickerActivity extends ListActivity {
 
-    static final int REQ_EXT_STORAGE = 1;
-
     File rootFolder = Environment.getExternalStorageDirectory();
     File currentFolder;
 
@@ -46,7 +44,7 @@ public class FilePickerActivity extends ListActivity {
         // Check permissions to READ External storage:
         if(Build.VERSION.SDK_INT >= 23) {
             if ((ContextCompat.checkSelfPermission(FilePickerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},REQ_EXT_STORAGE);
+                ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PrintingConstants.PERMISSION_EXT_STORAGE_READ);
             } else
                 fillList();
         } else
@@ -56,7 +54,7 @@ public class FilePickerActivity extends ListActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case REQ_EXT_STORAGE:
+            case PrintingConstants.PERMISSION_EXT_STORAGE_READ:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED))
                     fillList();
                 else
@@ -80,11 +78,11 @@ public class FilePickerActivity extends ListActivity {
                     || fileName.toUpperCase().endsWith(".JPEG")
                     || fileName.toUpperCase().endsWith(".PNG")) {
 
-                PrintingApplication.JobType type = fileName.toUpperCase().endsWith(".PDF") ? PrintingApplication.JobType.DOCUMENT : PrintingApplication.JobType.IMAGE;
+                PrintingConstants.JobType type = fileName.toUpperCase().endsWith(".PDF") ? PrintingConstants.JobType.DOCUMENT : PrintingConstants.JobType.IMAGE;
 
                 Intent intent = new Intent(FilePickerActivity.this, Viewer.class);
-                intent.putExtra("file", fileName);
-                intent.putExtra("type", type);
+                intent.putExtra(PrintingConstants.FILE_URI, fileName);
+                intent.putExtra(PrintingConstants.FILE_MIMETYPE, type);
 
                 startActivityForResult(intent, 1);
             } else
