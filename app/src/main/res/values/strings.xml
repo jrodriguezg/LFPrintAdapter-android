@@ -1,9 +1,7 @@
 <resources>
     <string name="app_name">Printing</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_printing_settings">PrintingSettingsActivity</string>
+    <string name="title_activity_printing_settings">Print Settings</string>
 
     <string name="file_size_bytes">%1$s B</string>
     <string name="file_size_Kbytes">%1$s KB</string>
@@ -13,4 +11,15 @@
     <string name="permission_not_granted">Need to accept READ_EXTERNAL_STORAGE permission.</string>
 
     <string name="menu_item_print">Print</string>
+
+    <!-- Radio Buttons -->
+    <string name="label_print_mode">Print Mode</string>
+    <string name="radio_button_print_mode_fit">Fit to Page</string>
+    <string name="radio_button_print_mode_clip">Clip Content</string>
+    <string name="radio_button_print_mode_as_is">Print as is</string>
+    <string name="label_margins_mode">Margins</string>
+    <string name="radio_button_no_margins">No Margins</string>
+    <string name="radio_button_printer_margins">Printer Margins</string>
+
+    <string name="btn_settings_print">Print</string>
 </resources>

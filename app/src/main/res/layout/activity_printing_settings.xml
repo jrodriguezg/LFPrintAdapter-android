@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Print Mode"
+        android:text="@string/label_print_mode"
         android:id="@+id/lblPrintMode"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -24,16 +24,16 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Fit to Page"
+            android:text="@string/radio_button_print_mode_fit"
             android:id="@+id/radioFit"
             android:onClick="onPrintModeClicked"
-            android:checked="true"
+            android:checked="false"
             android:gravity="center" />
 
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clip Content"
+            android:text="@string/radio_button_print_mode_clip"
             android:id="@+id/radioClip"
             android:onClick="onPrintModeClicked"
             android:checked="false"
@@ -42,7 +42,7 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="As is"
+            android:text="@string/radio_button_print_mode_as_is"
             android:id="@+id/radioAsIs"
             android:onClick="onPrintModeClicked"
             android:checked="false"
@@ -53,7 +53,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Margins"
+        android:text="@string/label_margins_mode"
         android:layout_below="@id/radioPrintMode"
         android:id="@+id/lblMargins"
         android:layout_alignParentStart="true" />
@@ -68,7 +68,7 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Margins"
+            android:text="@string/radio_button_no_margins"
             android:id="@+id/radioNoMargins"
             android:onClick="onMarginsModeClicked"
             android:checked="false"
@@ -77,10 +77,10 @@
         <RadioButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Printer Margins"
+            android:text="@string/radio_button_printer_margins"
             android:id="@+id/radioPrinterMargins"
             android:onClick="onMarginsModeClicked"
-            android:checked="true"
+            android:checked="false"
             android:layout_gravity="center" />
 
     </RadioGroup>
@@ -88,7 +88,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Print"
+        android:text="@string/btn_settings_print"
         android:id="@+id/btn_print"
         android:onClick="doPrint"
         android:layout_alignParentBottom="true"

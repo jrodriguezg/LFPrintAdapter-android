@@ -1,5 +1,7 @@
 package com.jmrodrigg.printing;
 
+import com.jmrodrigg.printing.model.PrintJob;
+
 import android.Manifest;
 import android.app.ListActivity;
 import android.content.Context;
@@ -78,13 +80,15 @@ public class FilePickerActivity extends ListActivity {
                     || fileName.toUpperCase().endsWith(".JPEG")
                     || fileName.toUpperCase().endsWith(".PNG")) {
 
-                PrintingConstants.JobType type = fileName.toUpperCase().endsWith(".PDF") ? PrintingConstants.JobType.DOCUMENT : PrintingConstants.JobType.IMAGE;
+                PrintingConstants.JobType mimeType = fileName.toUpperCase().endsWith(".PDF") ? PrintingConstants.JobType.DOCUMENT : PrintingConstants.JobType.IMAGE;
 
                 Intent intent = new Intent(FilePickerActivity.this, Viewer.class);
-                intent.putExtra(PrintingConstants.FILE_URI, fileName);
-                intent.putExtra(PrintingConstants.FILE_MIMETYPE, type);
-
+                PrintJob job = new PrintJob();
+                job.setUri(fileName);
+                job.setMimeType(mimeType);
+                intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,job);
                 startActivityForResult(intent, 1);
+
             } else
                 Toast.makeText(FilePickerActivity.this, getString(R.string.unsupported_mime_type), Toast.LENGTH_SHORT).show();
         }

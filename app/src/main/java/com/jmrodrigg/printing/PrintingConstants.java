@@ -6,8 +6,7 @@ package com.jmrodrigg.printing;
 public class PrintingConstants {
 
     // Bundle parameters:
-    public static final String FILE_MIMETYPE = "mime-type";
-    public static final String FILE_URI = "file-uri";
+    public static final String PRINT_JOB_CLASS = "print-job-class";
 
     // Margins:
     public static final int LEFT_MARGIN    = 0;
@@ -18,8 +17,11 @@ public class PrintingConstants {
     // Permissions requests:
     public static final int PERMISSION_EXT_STORAGE_READ = 1;
 
+    // Intent actions:
+    public static final int ACTION_PRINT = 1;
+
     // Printing settings:
-    public enum PrintMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
+    public enum FitMode { PRINT_FIT_TO_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
     public enum MarginsMode { NO_MARGINS, PRINTER_MARGINS }
     public enum JobType { DOCUMENT, IMAGE }
 }

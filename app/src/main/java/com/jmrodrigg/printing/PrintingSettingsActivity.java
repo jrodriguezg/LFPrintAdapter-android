@@ -1,13 +1,17 @@
 package com.jmrodrigg.printing;
 
+import com.jmrodrigg.printing.model.PrintJob;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.print.PrintManager;
 import android.support.v4.print.PrintHelper;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioButton;
 
@@ -17,6 +21,8 @@ import android.widget.RadioButton;
  */
 public class PrintingSettingsActivity extends Activity {
 
+    PrintJob mPrintJob;
+
     /** Overriden methods **/
 
     @Override
@@ -24,9 +30,47 @@ public class PrintingSettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_printing_settings);
 
-        if(((PrintingApplication)getApplication()).objectType == PrintingConstants.JobType.IMAGE){
-            RadioButton btn = (RadioButton) findViewById(R.id.radioAsIs);
-            btn.setVisibility(View.GONE);
+        this.setTitle(getString(R.string.title_activity_printing_settings));
+
+        mPrintJob = getIntent().getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
+
+        // Init components:
+        initComponents();
+    }
+
+    private void initComponents() {
+        RadioButton rBtnPMFill, rBtnPMFit, rBtnPMAsIs;
+        RadioButton rBtnNoMargins, rBtnPrinterMargins;
+
+        rBtnPMFill = (RadioButton) findViewById(R.id.radioClip);
+        rBtnPMFit = (RadioButton) findViewById(R.id.radioFit);
+        rBtnPMAsIs = (RadioButton) findViewById(R.id.radioAsIs);
+
+        rBtnNoMargins = (RadioButton) findViewById(R.id.radioNoMargins);
+        rBtnPrinterMargins = (RadioButton) findViewById(R.id.radioPrinterMargins);
+
+        if(mPrintJob.getMimeType() == PrintingConstants.JobType.IMAGE)
+            rBtnPMAsIs.setVisibility(View.GONE);
+
+        switch (mPrintJob.getFitMode()) {
+            case PRINT_FIT_TO_PAGE:
+                rBtnPMFit.setChecked(true);
+                break;
+            case PRINT_CLIP_CONTENT:
+                rBtnPMFill.setChecked(true);
+                break;
+            case PASS_PDF_AS_IS:
+                rBtnPMAsIs.setChecked(true);
+                break;
+        }
+
+        switch (mPrintJob.getMarginsMode()) {
+            case NO_MARGINS:
+                rBtnNoMargins.setChecked(true);
+                break;
+            case PRINTER_MARGINS:
+                rBtnPrinterMargins.setChecked(true);
+                break;
         }
     }
 
@@ -45,16 +89,16 @@ public class PrintingSettingsActivity extends Activity {
         switch(v.getId()) {
             // Send exactly the original document. No processing:
             case R.id.radioAsIs:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PASS_PDF_AS_IS;
+                if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PASS_PDF_AS_IS);
                 break;
             // Clip the original document to the paper size selected:
             case R.id.radioClip:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PRINT_CLIP_CONTENT;
+                if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PRINT_CLIP_CONTENT);
                 break;
             // Fit the original document to the paper size selected:
             default:
             case R.id.radioFit:
-                if(checked) ((PrintingApplication)getApplication()).print_mode = PrintingConstants.PrintMode.PRINT_FIT_TO_PAGE;
+                if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
                 break;
 
         }
@@ -65,35 +109,34 @@ public class PrintingSettingsActivity extends Activity {
 
         switch(v.getId()) {
             case R.id.radioNoMargins:
-                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingConstants.MarginsMode.NO_MARGINS;
+                if(checked) mPrintJob.setMarginsMode(PrintingConstants.MarginsMode.NO_MARGINS);
                 break;
             case R.id.radioPrinterMargins:
-                if(checked) ((PrintingApplication)getApplication()).margins_mode = PrintingConstants.MarginsMode.PRINTER_MARGINS;
+                if(checked) mPrintJob.setMarginsMode(PrintingConstants.MarginsMode.PRINTER_MARGINS);
                 break;
         }
     }
 
     public void doPrint(View v) {
-        switch (((PrintingApplication)getApplication()).objectType) {
+        switch (mPrintJob.getMimeType()) {
             case DOCUMENT:
                 PrintManager printManager = (PrintManager) getSystemService(
                         Context.PRINT_SERVICE);
-                printManager.print("document",new PrintAdapter(this),null);
+                printManager.print("document",new PrintAdapter(this,mPrintJob),null);
                 break;
 
             case IMAGE:
                 try{
                     PrintHelper pHelper = new PrintHelper(this);
 
-                    if(((PrintingApplication)getApplication()).print_mode == PrintingConstants.PrintMode.PRINT_CLIP_CONTENT) {
+                    if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_CLIP_CONTENT)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
-                    } else if(((PrintingApplication)getApplication()).print_mode == PrintingConstants.PrintMode.PRINT_FIT_TO_PAGE) {
+                    } else if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FIT);
-                    } else {
+                    } else
                         throw new Exception("Print Mode not supported");
-                    }
 
-                    Bitmap bmp = BitmapFactory.decodeFile(((PrintingApplication) getApplication()).filepath);
+                    Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
                     pHelper.printBitmap("image", bmp);
 
                 } catch (Exception ex) {
@@ -101,6 +144,28 @@ public class PrintingSettingsActivity extends Activity {
                 }
                 break;
         }
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finishActivity();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finishActivity();
+    }
+
+    private void finishActivity() {
+        Intent intent = new Intent();
+        intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
+        setResult(RESULT_OK,intent);
+        finish();
     }
 }

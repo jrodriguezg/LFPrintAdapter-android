@@ -1,5 +1,7 @@
 package com.jmrodrigg.printing;
 
+import com.jmrodrigg.printing.model.PrintJob;
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -41,21 +43,21 @@ public class PrintAdapter extends PrintDocumentAdapter {
     int mMediaSize[];
     int mMargins[];
     int mTotalPages;
-    PrintingConstants.PrintMode print_mode;
+    PrintingConstants.FitMode print_mode;
     PrintingConstants.MarginsMode margins_mode;
 
     private PrintedPdfDocument mDocument;
 
-    public PrintAdapter(Activity act) {
+    public PrintAdapter(Activity act, PrintJob printJob) {
         mMediaSize = new int[2];
         mMargins = new int[4];
 
         mParentActivity = act;
         mRenderer = ((PrintingApplication)act.getApplication()).renderer;
-        mPdfFile = ((PrintingApplication)act.getApplication()).filepath;
+        mPdfFile = printJob.getUri();
 
-        print_mode = ((PrintingApplication)act.getApplication()).print_mode;
-        margins_mode = ((PrintingApplication)act.getApplication()).margins_mode;
+        print_mode = printJob.getFitMode();
+        margins_mode = printJob.getMarginsMode();
     }
 
     @Override
@@ -118,7 +120,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
         int marginHeight = mMargins[PrintingConstants.TOP_MARGIN] + mMargins[PrintingConstants.BOTTOM_MARGIN];
 
         try {
-            if(print_mode == PrintingConstants.PrintMode.PASS_PDF_AS_IS){
+            if(print_mode == PrintingConstants.FitMode.PASS_PDF_AS_IS){
                 File f = new File(mPdfFile);
                 InputStream in = new FileInputStream(f);
                 OutputStream out = new FileOutputStream(destination.getFileDescriptor());

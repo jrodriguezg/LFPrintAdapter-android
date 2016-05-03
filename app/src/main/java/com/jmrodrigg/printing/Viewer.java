@@ -1,5 +1,7 @@
 package com.jmrodrigg.printing;
 
+import com.jmrodrigg.printing.model.PrintJob;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -25,15 +27,15 @@ public class Viewer extends Activity {
 
     private ImageView mView;
     private int mCurrentPage;
-    Button mPrevButton, mNextButton;
+    private Button mPrevButton, mNextButton;
+    private PrintJob mPrintJob;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
 
-        String filename = getIntent().getStringExtra(PrintingConstants.FILE_URI);
-        PrintingConstants.JobType type = (PrintingConstants.JobType) getIntent().getSerializableExtra(PrintingConstants.FILE_MIMETYPE);
+        mPrintJob = getIntent().getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
 
         // ImageView:
         mView = (ImageView) findViewById(R.id.imageView);
@@ -43,21 +45,19 @@ public class Viewer extends Activity {
         mNextButton = (Button) findViewById(R.id.nextPage);
 
         // Content Type:
-        switch(type) {
+        switch(mPrintJob.getMimeType()) {
             case DOCUMENT:
-                renderDocument(filename);
+                renderDocument();
                 break;
             case IMAGE:
-                renderImage(filename);
+                renderImage();
                 break;
         }
     }
 
-    private void renderDocument(String filename) {
-        ((PrintingApplication)getApplication()).objectType = PrintingConstants.JobType.DOCUMENT;
-
+    private void renderDocument() {
         try {
-            File f = new File(filename);
+            File f = new File(mPrintJob.getUri());
 
             if(!f.exists()) this.finish();
 
@@ -109,8 +109,8 @@ public class Viewer extends Activity {
         mView.setImageBitmap(bmp);
     }
 
-    private void renderImage(String filename) {
-        Bitmap bmp = BitmapFactory.decodeFile(filename);
+    private void renderImage() {
+        Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
         mView.setImageBitmap(bmp);
 
         mPrevButton.setVisibility(View.GONE);
@@ -129,10 +129,21 @@ public class Viewer extends Activity {
         switch(selectedItem.getItemId()) {
             case R.id.action_print:
                 Intent intent = new Intent(this,PrintingSettingsActivity.class);
-                startActivity(intent);
+                intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
+                startActivityForResult(intent,PrintingConstants.ACTION_PRINT);
                 break;
         }
 
         return super.onOptionsItemSelected(selectedItem);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        switch (requestCode) {
+            case PrintingConstants.ACTION_PRINT:
+                // Update the print job with the settings selected:
+                mPrintJob = intent.getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
+                break;
+        }
     }
 }
