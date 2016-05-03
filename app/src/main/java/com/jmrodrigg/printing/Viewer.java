@@ -7,9 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +37,8 @@ public class Viewer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
 
+        String filename = getIntent().getStringExtra("file");
+        PrintingApplication.JobType type = (PrintingApplication.JobType) getIntent().getSerializableExtra("type");
 
         // ImageView:
         mView = (ImageView) findViewById(R.id.imageView);
@@ -48,26 +48,21 @@ public class Viewer extends Activity {
         mNextButton = (Button) findViewById(R.id.nextPage);
 
         // Content Type:
-        switch(((PrintingApplication)getApplication()).objectType) {
+        switch(type) {
             case DOCUMENT:
-                renderDocument(doc);
+                renderDocument(filename);
                 break;
             case IMAGE:
-                renderImage(img);
+                renderImage(filename);
                 break;
         }
     }
 
-    private void renderDocument(String pPath) {
+    private void renderDocument(String filename) {
         ((PrintingApplication)getApplication()).objectType = PrintingApplication.JobType.DOCUMENT;
 
-        File pathDir = Environment.getExternalStorageDirectory();
-        ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pPath;
-
-        Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
-
         try {
-            File f = new File(((PrintingApplication)getApplication()).filepath);
+            File f = new File(filename);
 
             if(!f.exists()) this.finish();
 
@@ -119,15 +114,8 @@ public class Viewer extends Activity {
         mView.setImageBitmap(bmp);
     }
 
-    private void renderImage(String pPath) {
-        ((PrintingApplication)getApplication()).objectType = PrintingApplication.JobType.IMAGE;
-
-        File pathDir = Environment.getExternalStorageDirectory();
-        ((PrintingApplication)getApplication()).filepath = pathDir.getAbsolutePath() + pPath;
-
-        Log.d("JMRODRIGG", ((PrintingApplication)getApplication()).filepath);
-
-        Bitmap bmp = BitmapFactory.decodeFile(((PrintingApplication)getApplication()).filepath);
+    private void renderImage(String filename) {
+        Bitmap bmp = BitmapFactory.decodeFile(filename);
         mView.setImageBitmap(bmp);
 
         mPrevButton.setVisibility(View.GONE);

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -46,22 +47,20 @@ public class FilePickerActivity extends ListActivity {
         if(Build.VERSION.SDK_INT >= 23) {
             if ((ContextCompat.checkSelfPermission(FilePickerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},REQ_EXT_STORAGE);
-            } else {
+            } else
                 fillList();
-            }
-        } else {
+        } else
             fillList();
-        }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQ_EXT_STORAGE:
-                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED))
                     fillList();
-                } else Toast.makeText(FilePickerActivity.this, getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-                return;
+                else
+                    Toast.makeText(FilePickerActivity.this, getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -75,18 +74,22 @@ public class FilePickerActivity extends ListActivity {
             currentFolder = selection;
             fillList();
         } else {
-            String fileName = selection.getName();
+            String fileName = selection.getAbsolutePath();
             if (fileName.toUpperCase().endsWith(".PDF")
                     || fileName.toUpperCase().endsWith(".JPG")
                     || fileName.toUpperCase().endsWith(".JPEG")
                     || fileName.toUpperCase().endsWith(".PNG")) {
 
-                // TODO link with Viewer activity.
+                PrintingApplication.JobType type = fileName.toUpperCase().endsWith(".PDF") ? PrintingApplication.JobType.DOCUMENT : PrintingApplication.JobType.IMAGE;
 
+                Intent intent = new Intent(FilePickerActivity.this, Viewer.class);
+                intent.putExtra("file", fileName);
+                intent.putExtra("type", type);
+
+                startActivityForResult(intent, 1);
             } else
                 Toast.makeText(FilePickerActivity.this, getString(R.string.unsupported_mime_type), Toast.LENGTH_SHORT).show();
         }
-
     }
 
     @Override
