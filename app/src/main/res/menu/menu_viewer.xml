@@ -1,19 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".Viewer">
 
-    <item android:id="@+id/action_image"
-        android:title="Image"
-        android:orderInCategory="200"
-        android:showAsAction="never" />
-
-    <item android:id="@+id/action_doc"
-        android:title="Document"
-        android:orderInCategory="200"
-        android:showAsAction="never"
-        android:visible="false"/>
-
     <item android:id="@+id/action_print"
-        android:title="Print"
+        android:title="@string/menu_item_print"
         android:orderInCategory="100"
         android:showAsAction="never" />
 </menu>
