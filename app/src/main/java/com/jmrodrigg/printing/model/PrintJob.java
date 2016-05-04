@@ -11,6 +11,7 @@ import android.os.Parcelable;
  */
 public class PrintJob implements Parcelable {
     private String mUri;
+    private String mFilename;
     private PrintingConstants.FitMode mFitMode;
     private PrintingConstants.MarginsMode mMarginsMode;
     private PrintingConstants.JobType mMimeType;
@@ -23,6 +24,7 @@ public class PrintJob implements Parcelable {
 
     protected PrintJob(Parcel in) {
         mUri = in.readString();
+        mFilename = in.readString();
         mMimeType = (PrintingConstants.JobType) in.readSerializable();
         mFitMode = (PrintingConstants.FitMode) in.readSerializable();
         mMarginsMode = (PrintingConstants.MarginsMode) in.readSerializable();
@@ -46,6 +48,14 @@ public class PrintJob implements Parcelable {
 
     public String getUri() {
         return mUri;
+    }
+
+    public String getFilename() {
+        return mFilename;
+    }
+
+    public void setFilename(String filename) {
+        mFilename = filename;
     }
 
     public void setMimeType(PrintingConstants.JobType mimeType) {
@@ -80,6 +90,7 @@ public class PrintJob implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mUri);
+        dest.writeString(mFilename);
         dest.writeSerializable(mMimeType);
         dest.writeSerializable(mFitMode);
         dest.writeSerializable(mMarginsMode);

@@ -89,6 +89,7 @@ public class FilePickerActivity extends ListActivity {
                 Intent intent = new Intent(FilePickerActivity.this, Viewer.class);
                 PrintJob job = new PrintJob();
                 job.setUri(fileName);
+                job.setFilename(selection.getName());
                 job.setMimeType(mimeType);
                 intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,job);
                 startActivityForResult(intent, 1);
