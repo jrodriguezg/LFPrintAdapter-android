@@ -70,6 +70,10 @@ public class Renderer {
         }
     }
 
+    public boolean shouldScaleForPrinting() {
+        return mRenderer.shouldScaleForPrinting();
+    }
+
     public void closeRenderer() {
         closePage();
         mRenderer.close();

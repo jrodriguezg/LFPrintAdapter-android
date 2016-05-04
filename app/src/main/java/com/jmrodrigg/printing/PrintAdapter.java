@@ -13,12 +13,14 @@ import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.print.pdf.PrintedPdfDocument;
+import android.util.Log;
 import android.util.SparseIntArray;
 
 import java.io.File;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -36,12 +39,18 @@ import java.util.List;
  */
 public class PrintAdapter extends PrintDocumentAdapter {
 
+    private static final int MILS_PER_INCH = 1000;
+
     private Activity mParentActivity;
     private Renderer mRenderer;
     private String mPdfFile;
+    private String mPdfFileName;
 
-    int mMediaSize[];
-    int mMargins[];
+    PrintAttributes currentAttributes;
+    int mRenderPageWidth, mRenderPageHeight;
+
+    PrintDocumentInfo mPrintDocumentInfo;
+
     int mTotalPages;
     PrintingConstants.FitMode print_mode;
     PrintingConstants.MarginsMode margins_mode;
@@ -49,12 +58,10 @@ public class PrintAdapter extends PrintDocumentAdapter {
     private PrintedPdfDocument mDocument;
 
     public PrintAdapter(Activity act, PrintJob printJob) {
-        mMediaSize = new int[2];
-        mMargins = new int[4];
-
         mParentActivity = act;
         mRenderer = ((PrintingApplication)act.getApplication()).renderer;
         mPdfFile = printJob.getUri();
+        mPdfFileName = printJob.getFilename();
 
         print_mode = printJob.getFitMode();
         margins_mode = printJob.getMarginsMode();
@@ -63,43 +70,50 @@ public class PrintAdapter extends PrintDocumentAdapter {
     @Override
     public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras) {
         mDocument = new PrintedPdfDocument(mParentActivity,newAttributes);
+        currentAttributes = newAttributes;
 
         if(cancellationSignal.isCanceled()) {
             callback.onLayoutCancelled();
             return;
         }
 
-        // store the media size:
-        mMediaSize[0] = newAttributes.getMediaSize().getWidthMils();
-        mMediaSize[1] = newAttributes.getMediaSize().getHeightMils();
+        boolean shouldLayout = false;
 
-        // store the margins:
-        switch(margins_mode){
-            case NO_MARGINS:
-                mMargins[PrintingConstants.LEFT_MARGIN]   = 0;
-                mMargins[PrintingConstants.TOP_MARGIN]    = 0;
-                mMargins[PrintingConstants.RIGHT_MARGIN]  = 0;
-                mMargins[PrintingConstants.BOTTOM_MARGIN] = 0;
-                break;
-            default:
-            case PRINTER_MARGINS:
-                mMargins[PrintingConstants.LEFT_MARGIN]   = newAttributes.getMinMargins().getLeftMils();
-                mMargins[PrintingConstants.TOP_MARGIN]    = newAttributes.getMinMargins().getTopMils();
-                mMargins[PrintingConstants.RIGHT_MARGIN]  = newAttributes.getMinMargins().getRightMils();
-                mMargins[PrintingConstants.BOTTOM_MARGIN] = newAttributes.getMinMargins().getBottomMils();
-                break;
+        final int density = Math.max(currentAttributes.getResolution().getHorizontalDpi(),currentAttributes.getResolution().getVerticalDpi());
+
+        final int margin_left = (int) (density * (float) currentAttributes.getMinMargins().getLeftMils() / MILS_PER_INCH);
+        final int margin_right = (int) (density * (float) currentAttributes.getMinMargins().getRightMils() / MILS_PER_INCH);
+        final int contentWidth = (int) (density * (float) currentAttributes.getMediaSize()
+                .getWidthMils() / MILS_PER_INCH) - margin_left - margin_right;
+        if (mRenderPageWidth != contentWidth) {
+            mRenderPageWidth = contentWidth;
+            shouldLayout = true;
+        }
+
+        final int margin_top = (int) (density * (float) currentAttributes.getMinMargins().getTopMils() / MILS_PER_INCH);
+        final int margin_bottom = (int) (density * (float) currentAttributes.getMinMargins().getBottomMils() / MILS_PER_INCH);
+        final int contentHeight = (int) (density * (float) currentAttributes.getMediaSize()
+                .getHeightMils() / MILS_PER_INCH) - margin_top - margin_bottom;
+        if (mRenderPageHeight != contentHeight) {
+            mRenderPageHeight = contentHeight;
+            shouldLayout = true;
+        }
+
+        if (!shouldLayout) {
+            callback.onLayoutFinished(mPrintDocumentInfo,false);
+            return;
         }
 
         int pages = computePageCount();
 
         if(pages > 0) {
-            PrintDocumentInfo info = new PrintDocumentInfo
+            mPrintDocumentInfo = new PrintDocumentInfo
                                         .Builder("print_output.pdf")
                                         .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
                                         .setPageCount(pages)
                                         .build();
 
-            callback.onLayoutFinished(info,true);
+            callback.onLayoutFinished(mPrintDocumentInfo,true);
         } else {
             callback.onLayoutFailed("Page count calculation failed.");
         }
@@ -116,59 +130,59 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
         SparseIntArray writtenPages = new SparseIntArray();
 
-        int marginWidth = mMargins[PrintingConstants.LEFT_MARGIN] + mMargins[PrintingConstants.RIGHT_MARGIN];
-        int marginHeight = mMargins[PrintingConstants.TOP_MARGIN] + mMargins[PrintingConstants.BOTTOM_MARGIN];
-
         try {
-            if(print_mode == PrintingConstants.FitMode.PASS_PDF_AS_IS){
-                File f = new File(mPdfFile);
-                InputStream in = new FileInputStream(f);
-                OutputStream out = new FileOutputStream(destination.getFileDescriptor());
-
-                copyFile(in, out);
-                in.close();
-                out.flush();
-                out.close();
+            if (print_mode == PrintingConstants.FitMode.PASS_PDF_AS_IS) {
+                printPdfAsIs(destination);
 
                 for (int i = 0; i < mTotalPages; i++) {
                     writtenPages.append(writtenPages.size(), i);
                 }
+            } else {
+                int margin_left = (int) (72 * (float) currentAttributes.getMinMargins().getLeftMils() / MILS_PER_INCH);
+                int margin_right = (int) (72 * (float) currentAttributes.getMinMargins().getRightMils() / MILS_PER_INCH);
+                int margin_top = (int) (72 * (float) currentAttributes.getMinMargins().getTopMils() / MILS_PER_INCH);
+                int margin_bottom = (int) (72 * (float) currentAttributes.getMinMargins().getBottomMils() / MILS_PER_INCH);
 
-            }else {
+//                margin_left = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
+//                margin_right = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
+//                margin_top = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
+//                margin_bottom = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
+
+                final int contentWidth = (int) (72 * (float) currentAttributes.getMediaSize()
+                        .getWidthMils() / MILS_PER_INCH) - margin_left - margin_right;
+                final int contentHeight = (int) (72 * (float) currentAttributes.getMediaSize()
+                        .getHeightMils() / MILS_PER_INCH) - margin_top - margin_bottom;
+
+                final float scale = Math.min((float) mDocument.getPageContentRect().width() / mRenderPageWidth,
+                                             (float) mDocument.getPageContentRect().height() / mRenderPageHeight);
+
                 for (int i = 0; i < mTotalPages; i++) {
                     if (containsPage(pageRanges, i)) {
                         // --> START Print page i;
                         PdfDocument.Page page = mDocument.startPage(i);
-
                         int[] dimensions = mRenderer.openPage(i);
-                        Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
-                        Matrix m = new Matrix();
 
                         switch (print_mode) {
                             case PRINT_CLIP_CONTENT:
-                                m.setScale(1.0f, 1.0f);
-                                mRenderer.renderPage(bmp, new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+                                Bitmap bmp = Bitmap.createBitmap(dimensions[0],dimensions[1], Bitmap.Config.ARGB_8888);
+
+                                Matrix m = new Matrix();
+                                m.setScale(1.0f,1.0f);
+//                                m.setTranslate(-margin_left, -margin_top);
+                                Rect rect = new Rect(0,0,dimensions[0],dimensions[1]);
+                                mRenderer.renderPage(bmp, rect, m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+
+                                Canvas c = page.getCanvas();
+                                c.drawBitmap(bmp, -margin_left, -margin_top, null);
+
+//                                Paint myPaint = new Paint();
+//                                myPaint.setColor(Color.argb(20,1,0,0));
+//                                myPaint.setStrokeWidth(1);
+//                                c.drawRect(rect, myPaint);
                                 break;
                             default:
-                            case PRINT_FIT_TO_PAGE:
-                                float widthScale = (float) (dimensions[0] - marginWidth) / (float) mMediaSize[0];
-                                float heightScale = (float) (dimensions[1] - marginHeight) / (float) mMediaSize[1];
-                                m.setScale(Math.min(widthScale, heightScale), Math.min(widthScale, heightScale));
                                 break;
                         }
-
-                        mRenderer.renderPage(bmp, new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-                        //Bitmap bmp = Bitmap.createBitmap(dimensions[0], dimensions[1], Bitmap.Config.ARGB_8888);
-                        //mRenderer.renderPage(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-
-                        Canvas c = page.getCanvas();
-                        c.drawBitmap(bmp, 0, 0, null);
-
-                        Paint myPaint = new Paint();
-                        myPaint.setColor(Color.argb(20, 1, 0, 0));
-                        myPaint.setStrokeWidth(10);
-                        c.drawRect(new Rect(mMargins[PrintingConstants.LEFT_MARGIN], mMargins[PrintingConstants.TOP_MARGIN], dimensions[0] - mMargins[PrintingConstants.RIGHT_MARGIN], dimensions[1] - mMargins[PrintingConstants.BOTTOM_MARGIN]), myPaint);
-
 
                         mDocument.finishPage(page);
 
@@ -178,6 +192,11 @@ public class PrintAdapter extends PrintDocumentAdapter {
                 }
                 mDocument.writeTo(new FileOutputStream(
                         destination.getFileDescriptor()));
+
+                // Save a copy in the External storage for debugging purposes:
+                long date = Calendar.getInstance().getTime().getTime();
+                mDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName));
+                Log.d(PrintingConstants.LOG_TAG,"A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
             }
         }catch(IOException ex) {
             mDocument.close();
@@ -186,6 +205,17 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
         PageRange[] writtenPageRange = computeWrittenPageRanges(writtenPages);
         callback.onWriteFinished(writtenPageRange);
+    }
+
+    private void printPdfAsIs(ParcelFileDescriptor destination) throws IOException{
+        File f = new File(mPdfFile);
+        InputStream in = new FileInputStream(f);
+        OutputStream out = new FileOutputStream(destination.getFileDescriptor());
+
+        copyFile(in, out);
+        in.close();
+        out.flush();
+        out.close();
     }
 
     private void copyFile(InputStream in, OutputStream out) throws IOException{
