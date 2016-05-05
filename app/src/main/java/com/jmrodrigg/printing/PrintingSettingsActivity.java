@@ -39,25 +39,31 @@ public class PrintingSettingsActivity extends Activity {
     }
 
     private void initComponents() {
-        RadioButton rBtnPMFill, rBtnPMFit, rBtnPMAsIs;
+        RadioButton rBtnPMFill, rBtnPMFit, rBtnPMClip, rBtnPMAsIs;
         RadioButton rBtnNoMargins, rBtnPrinterMargins;
 
-        rBtnPMFill = (RadioButton) findViewById(R.id.radioClip);
         rBtnPMFit = (RadioButton) findViewById(R.id.radioFit);
+        rBtnPMFill = (RadioButton) findViewById(R.id.radioFill);
+        rBtnPMClip = (RadioButton) findViewById(R.id.radioClip);
         rBtnPMAsIs = (RadioButton) findViewById(R.id.radioAsIs);
 
         rBtnNoMargins = (RadioButton) findViewById(R.id.radioNoMargins);
         rBtnPrinterMargins = (RadioButton) findViewById(R.id.radioPrinterMargins);
 
-        if(mPrintJob.getMimeType() == PrintingConstants.JobType.IMAGE)
+        if(mPrintJob.getMimeType() == PrintingConstants.JobType.IMAGE) {
             rBtnPMAsIs.setVisibility(View.GONE);
+            rBtnPMClip.setVisibility(View.GONE);
+        }
 
         switch (mPrintJob.getFitMode()) {
             case PRINT_FIT_TO_PAGE:
                 rBtnPMFit.setChecked(true);
                 break;
-            case PRINT_CLIP_CONTENT:
+            case PRINT_FILL_PAGE:
                 rBtnPMFill.setChecked(true);
+                break;
+            case PRINT_CLIP_CONTENT:
+                rBtnPMClip.setChecked(true);
                 break;
             case PASS_PDF_AS_IS:
                 rBtnPMAsIs.setChecked(true);
@@ -95,6 +101,9 @@ public class PrintingSettingsActivity extends Activity {
             case R.id.radioClip:
                 if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PRINT_CLIP_CONTENT);
                 break;
+            case R.id.radioFill:
+                if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PRINT_FILL_PAGE);
+                break;
             // Fit the original document to the paper size selected:
             default:
             case R.id.radioFit:
@@ -129,7 +138,7 @@ public class PrintingSettingsActivity extends Activity {
                 try{
                     PrintHelper pHelper = new PrintHelper(this);
 
-                    if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_CLIP_CONTENT)) {
+                    if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
                     } else if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FIT);

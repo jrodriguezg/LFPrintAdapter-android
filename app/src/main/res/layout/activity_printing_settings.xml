@@ -31,6 +31,15 @@
             android:gravity="center" />
 
         <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/radio_button_print_mode_fill"
+                android:id="@+id/radioFill"
+                android:onClick="onPrintModeClicked"
+                android:checked="false"
+                android:gravity="center" />
+
+        <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/radio_button_print_mode_clip"

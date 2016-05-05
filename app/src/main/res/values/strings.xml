@@ -15,6 +15,7 @@
     <!-- Radio Buttons -->
     <string name="label_print_mode">Print Mode</string>
     <string name="radio_button_print_mode_fit">Fit to Page</string>
+    <string name="radio_button_print_mode_fill">Fill Page</string>
     <string name="radio_button_print_mode_clip">Clip Content</string>
     <string name="radio_button_print_mode_as_is">Print as is</string>
     <string name="label_margins_mode">Margins</string>

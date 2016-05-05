@@ -157,6 +157,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
                         PdfDocument.Page page = mDocument.startPage(pInfo);
                         Bitmap bmp = Bitmap.createBitmap(printable_width, printable_height, Bitmap.Config.ARGB_8888);
                         Matrix m = new Matrix();
+                        float scale;
 
                         switch (print_mode) {
                             case PRINT_CLIP_CONTENT:
@@ -168,12 +169,18 @@ public class PrintAdapter extends PrintDocumentAdapter {
                                 break;
 
                             case PRINT_FIT_TO_PAGE:
+                            case PRINT_FILL_PAGE:
                             default:
-                                float scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
+                                scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
+                                if ((print_mode.equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE) && (scale < 1))
+                                    || (print_mode.equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)))
+                                    m.setScale(scale, scale);
+                                else
+                                    scale = 1;
+
+                                // Translate to center the content:
                                 translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
                                 translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
-
-                                m.setScale(scale, scale);
                                 m.postTranslate(translateX/2, translateY/2);
                                 break;
                         }
