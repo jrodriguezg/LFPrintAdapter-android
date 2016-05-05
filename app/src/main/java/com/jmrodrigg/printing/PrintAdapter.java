@@ -5,10 +5,7 @@ import com.jmrodrigg.printing.model.PrintJob;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
@@ -143,47 +140,48 @@ public class PrintAdapter extends PrintDocumentAdapter {
                 int margin_top = (int) (72 * (float) currentAttributes.getMinMargins().getTopMils() / MILS_PER_INCH);
                 int margin_bottom = (int) (72 * (float) currentAttributes.getMinMargins().getBottomMils() / MILS_PER_INCH);
 
-//                margin_left = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
-//                margin_right = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
-//                margin_top = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
-//                margin_bottom = (int) ( 72 * (296/2.54f) / MILS_PER_INCH);
+                int pageWidth = (int) (72 * (float) currentAttributes.getMediaSize().getWidthMils() / MILS_PER_INCH);
+                int pageHeight = (int) (72 * (float) currentAttributes.getMediaSize().getHeightMils() / MILS_PER_INCH);
 
-                final int contentWidth = (int) (72 * (float) currentAttributes.getMediaSize()
-                        .getWidthMils() / MILS_PER_INCH) - margin_left - margin_right;
-                final int contentHeight = (int) (72 * (float) currentAttributes.getMediaSize()
-                        .getHeightMils() / MILS_PER_INCH) - margin_top - margin_bottom;
+                int printable_width = pageWidth-(margin_left+margin_right);
+                int printable_height = pageHeight-(margin_top+margin_bottom);
 
-                final float scale = Math.min((float) mDocument.getPageContentRect().width() / mRenderPageWidth,
-                                             (float) mDocument.getPageContentRect().height() / mRenderPageHeight);
+                int translateX, translateY;
 
                 for (int i = 0; i < mTotalPages; i++) {
                     if (containsPage(pageRanges, i)) {
                         // --> START Print page i;
-                        PdfDocument.Page page = mDocument.startPage(i);
                         int[] dimensions = mRenderer.openPage(i);
+//                        PdfDocument.Page page = mDocument.startPage(i);
+                        PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(printable_width, printable_height, i).create();
+                        PdfDocument.Page page = mDocument.startPage(pInfo);
+                        Bitmap bmp = Bitmap.createBitmap(printable_width, printable_height, Bitmap.Config.ARGB_8888);
+                        Matrix m = new Matrix();
 
                         switch (print_mode) {
                             case PRINT_CLIP_CONTENT:
-                                Bitmap bmp = Bitmap.createBitmap(dimensions[0],dimensions[1], Bitmap.Config.ARGB_8888);
-
-                                Matrix m = new Matrix();
                                 m.setScale(1.0f,1.0f);
-//                                m.setTranslate(-margin_left, -margin_top);
-                                Rect rect = new Rect(0,0,dimensions[0],dimensions[1]);
-                                mRenderer.renderPage(bmp, rect, m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-
-                                Canvas c = page.getCanvas();
-                                c.drawBitmap(bmp, -margin_left, -margin_top, null);
-
-//                                Paint myPaint = new Paint();
-//                                myPaint.setColor(Color.argb(20,1,0,0));
-//                                myPaint.setStrokeWidth(1);
-//                                c.drawRect(rect, myPaint);
+                                // Center the bitmap on page while correct the margin offset:
+                                translateX = Math.abs(dimensions[0]-pageWidth);
+                                translateY = Math.abs(dimensions[1]-pageHeight);
+                                m.setTranslate(translateX/2 -margin_left ,translateY/2 -margin_top);
                                 break;
+
+                            case PRINT_FIT_TO_PAGE:
                             default:
+                                float scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
+                                translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
+                                translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
+
+                                m.setScale(scale, scale);
+                                m.postTranslate(translateX/2, translateY/2);
                                 break;
                         }
 
+                        mRenderer.renderPage(bmp, null, m, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+
+                        Canvas c = page.getCanvas();
+                        c.drawBitmap(bmp, 0, 0, null);
                         mDocument.finishPage(page);
 
                         writtenPages.append(writtenPages.size(), i);
