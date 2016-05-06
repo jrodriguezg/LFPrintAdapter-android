@@ -182,10 +182,21 @@ public class PrintAdapter extends PrintDocumentAdapter {
                                 else
                                     scale = 1;
 
-                                // Translate to center the content:
                                 translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
                                 translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
-                                m.postTranslate(translateX/2, translateY/2);
+
+                                // Rotate and translate if landscape:
+                                if(dimensions[0] > dimensions[1]) {
+                                    m.preRotate(90);
+                                    m.postTranslate(dimensions[1] * scale,translateY/2);
+                                    if(pageWidth > pageHeight)
+                                        m.postTranslate(translateX/2,0);
+                                } else {
+                                    // Translate to center the content:
+                                    m.postTranslate(translateX/2, translateY/2);
+                                }
+
+
                                 break;
                         }
 
