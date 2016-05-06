@@ -43,10 +43,10 @@ public class PrintAdapter extends PrintDocumentAdapter {
     private String mPdfFile;
     private String mPdfFileName;
 
-    PrintAttributes currentAttributes;
-    int mRenderPageWidth, mRenderPageHeight;
+    private PrintAttributes currentAttributes;
+    private int mRenderPageWidth, mRenderPageHeight;
 
-    PrintDocumentInfo mPrintDocumentInfo;
+    private PrintDocumentInfo mPrintDocumentInfo;
 
     int mTotalPages;
     PrintingConstants.FitMode print_mode;
@@ -54,9 +54,13 @@ public class PrintAdapter extends PrintDocumentAdapter {
 
     private PrintedPdfDocument mDocument;
 
-    public PrintAdapter(Activity act, PrintJob printJob) {
+    public PrintAdapter(Activity act, PrintJob printJob) throws IOException {
         mParentActivity = act;
-        mRenderer = ((PrintingApplication)act.getApplication()).renderer;
+
+        File f = new File(printJob.getUri());
+        ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f,ParcelFileDescriptor.MODE_READ_ONLY);
+
+        mRenderer = new Renderer(pfd);
         mPdfFile = printJob.getUri();
         mPdfFileName = printJob.getFilename();
 

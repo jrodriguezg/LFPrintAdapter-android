@@ -10,10 +10,13 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.print.PrintManager;
 import android.support.v4.print.PrintHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioButton;
+
+import java.io.IOException;
 
 /**
  * Author: jrodriguezg
@@ -129,9 +132,13 @@ public class PrintingSettingsActivity extends Activity {
     public void doPrint(View v) {
         switch (mPrintJob.getMimeType()) {
             case DOCUMENT:
-                PrintManager printManager = (PrintManager) getSystemService(
-                        Context.PRINT_SERVICE);
-                printManager.print("document",new PrintAdapter(this,mPrintJob),null);
+                try {
+                    PrintManager printManager = (PrintManager) getSystemService(
+                            Context.PRINT_SERVICE);
+                    printManager.print("document", new PrintAdapter(this, mPrintJob), null);
+                } catch (IOException ex) {
+                    Log.e(PrintingConstants.LOG_TAG,"IOException while initializing the PrintAdapter.");
+                }
                 break;
 
             case IMAGE:

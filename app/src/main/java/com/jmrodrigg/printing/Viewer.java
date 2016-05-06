@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,7 @@ public class Viewer extends Activity {
     private int mCurrentPage;
     private Button mPrevButton, mNextButton;
     private PrintJob mPrintJob;
+    private Renderer mRenderer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +49,11 @@ public class Viewer extends Activity {
         // Content Type:
         switch(mPrintJob.getMimeType()) {
             case DOCUMENT:
-                renderDocument();
+                try {
+                    renderDocument();
+                } catch (IOException ex) {
+                    Log.e(PrintingConstants.LOG_TAG,"IOException when rendering the Document.");
+                }
                 break;
             case IMAGE:
                 renderImage();
@@ -55,18 +61,12 @@ public class Viewer extends Activity {
         }
     }
 
-    private void renderDocument() {
-        try {
-            File f = new File(mPrintJob.getUri());
+    private void renderDocument() throws IOException {
 
-            if(!f.exists()) this.finish();
+        File f = new File(mPrintJob.getUri());
+        ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY);
 
-            ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f,ParcelFileDescriptor.MODE_READ_ONLY);
-            ((PrintingApplication)getApplication()).renderer = new Renderer(pfd);
-        }catch(IOException ex) {
-            ex.printStackTrace();
-            this.finish();
-        }
+        mRenderer = new Renderer(pfd);
 
         mCurrentPage = 0;
 
@@ -77,19 +77,19 @@ public class Viewer extends Activity {
             @Override
             public void onClick(View view) {
                 mNextButton.setEnabled(true);
-                ((PrintingApplication)getApplication()).renderer.openPage(--mCurrentPage);
+                mRenderer.openPage(--mCurrentPage);
                 if(mCurrentPage == 0) mPrevButton.setEnabled(false);
                 renderPage();
             }
         });
         mPrevButton.setVisibility(View.VISIBLE);
-        mNextButton.setEnabled(((PrintingApplication)getApplication()).renderer.getPageCount() > 1);
+        mNextButton.setEnabled(mRenderer.getPageCount() > 1);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mPrevButton.setEnabled(true);
-                ((PrintingApplication)getApplication()).renderer.openPage(++mCurrentPage);
-                if(mCurrentPage == (((PrintingApplication)getApplication()).renderer.getPageCount() -1)) mNextButton.setEnabled(false);
+                mRenderer.openPage(++mCurrentPage);
+                if(mCurrentPage == (mRenderer.getPageCount() -1)) mNextButton.setEnabled(false);
                 renderPage();
             }
         });
@@ -99,9 +99,9 @@ public class Viewer extends Activity {
     }
 
     private void renderPage() {
-        int [] dimensions = ((PrintingApplication)getApplication()).renderer.openPage(mCurrentPage);
+        int [] dimensions = mRenderer.openPage(mCurrentPage);
         Bitmap bmp = Bitmap.createBitmap(dimensions[0],dimensions[1], Bitmap.Config.ARGB_8888);
-        ((PrintingApplication)getApplication()).renderer.renderPage(bmp,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+        mRenderer.renderPage(bmp,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
         mView.setMaxWidth(dimensions[0]);mView.setMinimumWidth(dimensions[0]);
         mView.setMaxHeight(dimensions[1]);mView.setMinimumHeight(dimensions[1]);

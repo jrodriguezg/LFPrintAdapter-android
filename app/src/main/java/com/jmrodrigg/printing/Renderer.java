@@ -17,15 +17,9 @@ public class Renderer {
     PdfRenderer mRenderer;
     PdfRenderer.Page mPage;
 
-    public Renderer(ParcelFileDescriptor pfd) {
+    public Renderer(ParcelFileDescriptor pfd) throws IOException {
         mPage = null;
-
-        try {
-            mRenderer = new PdfRenderer(pfd);
-        } catch (IOException e) {
-            mRenderer = null;
-            e.printStackTrace();
-        }
+        mRenderer = new PdfRenderer(pfd);
     }
 
     public int getPageCount() {
