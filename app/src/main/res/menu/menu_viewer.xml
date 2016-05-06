@@ -5,4 +5,9 @@
         android:title="@string/menu_item_print"
         android:orderInCategory="100"
         android:showAsAction="never" />
+
+    <item android:id="@+id/action_sample"
+          android:title="@string/menu_sample_code"
+          android:orderInCategory="100"
+          android:showAsAction="never" />
 </menu>

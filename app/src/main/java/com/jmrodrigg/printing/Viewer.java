@@ -1,6 +1,7 @@
 package com.jmrodrigg.printing;
 
 import com.jmrodrigg.printing.model.PrintJob;
+import com.jmrodrigg.printing.samples.PrintCustomContent;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -125,13 +126,19 @@ public class Viewer extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem selectedItem) {
+        Intent intent;
 
         switch(selectedItem.getItemId()) {
             case R.id.action_print:
-                Intent intent = new Intent(this,PrintingSettingsActivity.class);
+                intent = new Intent(this,PrintingSettingsActivity.class);
                 intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
                 startActivityForResult(intent,PrintingConstants.ACTION_PRINT);
                 break;
+            case R.id.action_sample:
+                intent = new Intent(this,PrintCustomContent.class);
+                startActivity(intent);
+                break;
+
         }
 
         return super.onOptionsItemSelected(selectedItem);
