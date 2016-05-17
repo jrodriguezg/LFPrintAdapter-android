@@ -11,6 +11,7 @@
     <string name="permission_not_granted">Need to accept READ_EXTERNAL_STORAGE permission.</string>
 
     <string name="menu_item_print">Print</string>
+    <string name="menu_item_sample">View Android Sample Code</string>
 
     <!-- Radio Buttons -->
     <string name="label_print_mode">Print Mode</string>
@@ -22,6 +23,4 @@
     <string name="radio_button_no_margins">No Margins</string>
     <string name="radio_button_printer_margins">Printer Margins</string>
 
-    <string name="menu_print">Print</string>
-    <string name="menu_sample_code">View Android Sample Code</string>
 </resources>

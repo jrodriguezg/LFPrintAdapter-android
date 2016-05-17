@@ -107,7 +107,15 @@ public class FilePickerActivity extends ListActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_filepicker, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (!rootFolder.equals(currentFolder)) {
@@ -122,7 +130,7 @@ public class FilePickerActivity extends ListActivity {
                 return true;
         }
 
-        return super.onOptionsItemSelected(selectedItem);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
