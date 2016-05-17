@@ -133,12 +133,7 @@ public class Viewer extends Activity {
                 intent = new Intent(this,PrintingSettingsActivity.class);
                 intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
                 startActivityForResult(intent,PrintingConstants.ACTION_PRINT);
-                break;
-            case R.id.action_sample:
-                intent = new Intent(this,PrintCustomContent.class);
-                startActivity(intent);
-                break;
-
+                return true;
         }
 
         return super.onOptionsItemSelected(selectedItem);

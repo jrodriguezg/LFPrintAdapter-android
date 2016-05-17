@@ -1,6 +1,7 @@
 package com.jmrodrigg.printing;
 
 import com.jmrodrigg.printing.model.PrintJob;
+import com.jmrodrigg.printing.samples.PrintCustomContent;
 
 import android.Manifest;
 import android.app.ListActivity;
@@ -14,6 +15,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -66,6 +69,26 @@ public class FilePickerActivity extends ListActivity {
                 else
                     Toast.makeText(FilePickerActivity.this, getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_filepicker, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem selectedItem) {
+        Intent intent;
+
+        switch(selectedItem.getItemId()) {
+            case R.id.action_sample:
+                intent = new Intent(this,PrintCustomContent.class);
+                startActivity(intent);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(selectedItem);
     }
 
     @Override
