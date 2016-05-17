@@ -1,6 +1,7 @@
 package com.jmrodrigg.printing;
 
 import com.jmrodrigg.printing.model.PrintJob;
+import com.jmrodrigg.printing.samples.PrintCustomContent;
 
 import android.Manifest;
 import android.app.ListActivity;
@@ -14,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,9 +116,13 @@ public class FilePickerActivity extends ListActivity {
                     return true;
                 }
                 break;
+            case R.id.action_sample:
+                intent = new Intent(this,PrintCustomContent.class);
+                startActivity(intent);
+                return true;
         }
 
-        return false;
+        return super.onOptionsItemSelected(selectedItem);
     }
 
     @Override
