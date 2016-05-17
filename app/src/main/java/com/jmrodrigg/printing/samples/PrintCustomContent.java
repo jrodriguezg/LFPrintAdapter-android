@@ -14,16 +14,19 @@ package com.jmrodrigg.printing.samples;
         * See the License for the specific language governing permissions and
         * limitations under the License.
         */
+import com.jmrodrigg.printing.PrintingConstants;
 import com.jmrodrigg.printing.R;
 
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfDocument.Page;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.CancellationSignal.OnCancelListener;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
 import android.print.PrintAttributes;
@@ -31,6 +34,7 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.print.pdf.PrintedPdfDocument;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,6 +48,7 @@ import android.widget.TextView;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 /**
  * This class demonstrates how to implement custom printing support.
@@ -99,9 +104,10 @@ public class PrintCustomContent extends ListActivity {
                 Context.PRINT_SERVICE);
         printManager.print("MotoGP stats",
                 new PrintDocumentAdapter() {
-                    private int mRenderPageWidth;
-                    private int mRenderPageHeight;
+                    private Integer mRenderPageWidth = 0;
+                    private Integer mRenderPageHeight = 0;
                     private PrintAttributes mPrintAttributes;
+                    private boolean isRoll;
                     private PrintDocumentInfo mDocumentInfo;
                     private Context mPrintContext;
                     @Override
@@ -143,16 +149,22 @@ public class PrintCustomContent extends ListActivity {
                         // The content height is equal to the page height minus the margins times
                         // the vertical printer resolution. This way we get the maximal number
                         // of pixels the printer can put vertically.
-                        final int marginTop = (int) (density * (float) newAttributes.getMinMargins()
-                                .getTopMils() / MILS_IN_INCH);
-                        final int marginBottom = (int) (density * (float) newAttributes.getMinMargins()
-                                .getBottomMils() / MILS_IN_INCH);
-                        final int contentHeight = (int) (density * (float) newAttributes.getMediaSize()
-                                .getHeightMils() / MILS_IN_INCH) - marginTop - marginBottom;
-                        if (mRenderPageHeight != contentHeight) {
-                            mRenderPageHeight = contentHeight;
-                            layoutNeeded = true;
-                        }
+
+                        // But, first of all, we check if MediaSize is roll:
+                        isRoll = newAttributes.getMediaSize().getId().contains("roll_current");
+                        if (!isRoll) {
+                            final int marginTop = (int) (density * (float) newAttributes.getMinMargins()
+                                    .getTopMils() / MILS_IN_INCH);
+                            final int marginBottom = (int) (density * (float) newAttributes.getMinMargins()
+                                    .getBottomMils() / MILS_IN_INCH);
+                            final int contentHeight = (int) (density * (float) newAttributes.getMediaSize()
+                                    .getHeightMils() / MILS_IN_INCH) - marginTop - marginBottom;
+                            if (mRenderPageHeight != contentHeight) {
+                                mRenderPageHeight = contentHeight;
+                                layoutNeeded = true;
+                            }
+                        } else mRenderPageHeight = null;
+
                         // Create a context for resources at printer density. We will
                         // be inflating views to render them and would like them to use
                         // resources for a density the printer supports.
@@ -225,11 +237,16 @@ public class PrintCustomContent extends ListActivity {
                                         // Add the height but if the view crosses the page
                                         // boundary we will put it to the next page.
                                         pageContentHeight += view.getMeasuredHeight();
-                                        if (pageContentHeight > mRenderPageHeight) {
+                                        if (!isRoll && (pageContentHeight > mRenderPageHeight)) {
                                             pageContentHeight = view.getMeasuredHeight();
                                             currentPage++;
                                         }
                                     }
+
+                                    if (isRoll) {
+                                        mRenderPageHeight = pageContentHeight;
+                                    }
+
                                     // Create a document info describing the result.
                                     PrintDocumentInfo info = new PrintDocumentInfo
                                             .Builder("MotoGP_stats.pdf")
@@ -308,11 +325,18 @@ public class PrintCustomContent extends ListActivity {
                                 // the width and height of the paper size times the print
                                 // density but the PDF canvas size is in points which are 1/72",
                                 // so we will scale down the content.
-                                final float scale =  Math.min(
-                                        (float) mPdfDocument.getPageContentRect().width()
-                                                / mRenderPageWidth,
-                                        (float) mPdfDocument.getPageContentRect().height()
-                                                / mRenderPageHeight);
+                                final float scale;
+                                if(isRoll) {
+                                    scale = (float) mPdfDocument.getPageContentRect().width()
+                                            / mRenderPageWidth;
+                                } else {
+                                    scale =  Math.min(
+                                            (float) mPdfDocument.getPageContentRect().width()
+                                                    / mRenderPageWidth,
+                                            (float) mPdfDocument.getPageContentRect().height()
+                                                    / mRenderPageHeight);
+                                }
+
                                 final int itemCount = adapter.getCount();
                                 for (int i = 0; i < itemCount; i++) {
                                     // Be nice and respond to cancellation.
@@ -341,7 +365,13 @@ public class PrintCustomContent extends ListActivity {
                                         }
                                         // If the page is requested, render it.
                                         if (containsPage(pages, currentPage)) {
-                                            page = mPdfDocument.startPage(currentPage);
+                                            final int density = Math.max(mPrintAttributes.getResolution().getHorizontalDpi(),
+                                                    mPrintAttributes.getResolution().getVerticalDpi());
+                                            int pWidth = (72 * mRenderPageWidth) / density;
+                                            int pHeight = (72 * mRenderPageHeight) / density;
+                                            PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(pWidth, pHeight, i).create();
+                                            page = mPdfDocument.startPage(pInfo);
+//                                            page = mPdfDocument.startPage(currentPage);
                                             page.getCanvas().scale(scale, scale);
                                             // Keep track which pages are written.
                                             mWrittenPages.append(mWrittenPages.size(), currentPage);
@@ -367,6 +397,11 @@ public class PrintCustomContent extends ListActivity {
                                 try {
                                     mPdfDocument.writeTo(new FileOutputStream(
                                             destination.getFileDescriptor()));
+
+                                    long date = Calendar.getInstance().getTime().getTime();
+                                    mPdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_MotoGP.pdf"));
+                                    Log.d(PrintingConstants.LOG_TAG,"A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_MotoGP.pdf");
+
                                     // Compute which page ranges were written based on
                                     // the bookkeeping we maintained.
                                     PageRange[] pageRanges = computeWrittenPageRanges(mWrittenPages);
@@ -390,9 +425,16 @@ public class PrintCustomContent extends ListActivity {
                         final int widthMeasureSpec = ViewGroup.getChildMeasureSpec(
                                 MeasureSpec.makeMeasureSpec(mRenderPageWidth,
                                         MeasureSpec.EXACTLY), 0, view.getLayoutParams().width);
-                        final int heightMeasureSpec = ViewGroup.getChildMeasureSpec(
-                                MeasureSpec.makeMeasureSpec(mRenderPageHeight,
-                                        MeasureSpec.EXACTLY), 0, view.getLayoutParams().height);
+                        int heightMeasureSpec;
+                        if (!isRoll) {
+                            heightMeasureSpec = ViewGroup.getChildMeasureSpec(
+                                    MeasureSpec.makeMeasureSpec(mRenderPageHeight,
+                                            MeasureSpec.EXACTLY), 0, view.getLayoutParams().height);
+                        } else {
+                            heightMeasureSpec = ViewGroup.getChildMeasureSpec(
+                                    MeasureSpec.makeMeasureSpec(view.getLayoutParams().height,
+                                            MeasureSpec.EXACTLY), 0, view.getLayoutParams().height);
+                        }
                         view.measure(widthMeasureSpec, heightMeasureSpec);
                     }
                     private PageRange[] computeWrittenPageRanges(SparseIntArray writtenPages) {
