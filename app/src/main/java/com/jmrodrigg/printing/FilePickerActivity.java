@@ -1,5 +1,6 @@
 package com.jmrodrigg.printing;
 
+import com.jmrodrigg.printing.controller.FileList;
 import com.jmrodrigg.printing.model.PrintJob;
 import com.jmrodrigg.printing.samples.PrintCustomContent;
 
@@ -10,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,8 +27,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,10 +37,7 @@ import java.util.Locale;
  */
 public class FilePickerActivity extends ListActivity {
 
-    File rootFolder = Environment.getExternalStorageDirectory();
-    File currentFolder;
-
-    ArrayList<File> childrenList;
+    FileList mFileListController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +47,7 @@ public class FilePickerActivity extends ListActivity {
         if (getActionBar() != null)
             getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        currentFolder = rootFolder;
+        mFileListController = new FileList();
 
         // Check permissions to READ External storage:
         if(Build.VERSION.SDK_INT >= 23) {
@@ -79,17 +74,14 @@ public class FilePickerActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
-        File selection = childrenList.get(position);
+        File selection = mFileListController.get(position);
 
         if (selection.isDirectory()) {
-            currentFolder = selection;
+            mFileListController.loadChildFolder(position);
             fillList();
         } else {
             String fileName = selection.getAbsolutePath();
-            if (fileName.toUpperCase().endsWith(".PDF")
-                    || fileName.toUpperCase().endsWith(".JPG")
-                    || fileName.toUpperCase().endsWith(".JPEG")
-                    || fileName.toUpperCase().endsWith(".PNG")) {
+            if (FileList.isSupportedFileExt(selection)) {
 
                 PrintingConstants.JobType mimeType = fileName.toUpperCase().endsWith(".PDF") ? PrintingConstants.JobType.DOCUMENT : PrintingConstants.JobType.IMAGE;
 
@@ -118,8 +110,8 @@ public class FilePickerActivity extends ListActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (!rootFolder.equals(currentFolder)) {
-                    currentFolder = currentFolder.getParentFile();
+                if (!mFileListController.isRootFolder()) {
+                    mFileListController.loadParentFolder();
                     fillList();
                     return true;
                 }
@@ -135,27 +127,17 @@ public class FilePickerActivity extends ListActivity {
 
     @Override
     public void onBackPressed() {
-        if (rootFolder.equals(currentFolder)) {
+        if (mFileListController.isRootFolder()) {
             finish();
         } else {
-            currentFolder = currentFolder.getParentFile();
+            mFileListController.loadParentFolder();
             fillList();
         }
     }
 
     private void fillList() {
-        String title = generateFolderTitle(currentFolder);
-        this.setTitle(title.isEmpty() ? "/" : title);
-
-        childrenList = new ArrayList<>();
-        Collections.addAll(childrenList, currentFolder.listFiles());
-
-        this.setListAdapter(new FileListAdapter(getBaseContext(), R.layout.file_item, childrenList));
-    }
-
-    private String generateFolderTitle(File folder) {
-        if (folder.equals(rootFolder)) return "";
-        else return generateFolderTitle(folder.getParentFile()) + "/" + folder.getName();
+        this.setTitle(mFileListController.fillList());
+        this.setListAdapter(new FileListAdapter(getBaseContext(), R.layout.file_item, mFileListController));
     }
 
     class FileListAdapter extends ArrayAdapter<File> {
