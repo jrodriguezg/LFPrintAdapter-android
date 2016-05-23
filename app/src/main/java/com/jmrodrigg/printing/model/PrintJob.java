@@ -5,6 +5,8 @@ import com.jmrodrigg.printing.PrintingConstants;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
+
 /**
  * Author: jrodriguezg
  * Date: 03/05/2016.
@@ -48,6 +50,11 @@ public class PrintJob implements Parcelable {
 
     public String getUri() {
         return mUri;
+    }
+
+    public boolean exists() {
+        File aFile = new File(mUri);
+        return aFile.exists();
     }
 
     public String getFilename() {

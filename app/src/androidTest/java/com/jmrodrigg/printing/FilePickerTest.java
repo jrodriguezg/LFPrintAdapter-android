@@ -24,14 +24,13 @@ public class FilePickerTest extends ActivityInstrumentationTestCase2<FilePickerA
 
     @Before
     public void setUp() throws Exception {
-
         mFilePickerActivity = getActivity();
     }
 
     public void testListIsValid() {
         for (File f:mFilePickerActivity.mFileListController) {
-            if (f.isDirectory()) continue;
-
+            if (f.isDirectory())
+                continue;
             assertThat(FileList.isSupportedFileExt(f), is(true));
         }
     }
