@@ -32,6 +32,7 @@ public class PrintJob implements Parcelable {
         mMarginsMode = (PrintingConstants.MarginsMode) in.readSerializable();
     }
 
+    /* Parcelable implementation */
     public static final Creator<PrintJob> CREATOR = new Creator<PrintJob>() {
         @Override
         public PrintJob createFromParcel(Parcel in) {
@@ -44,17 +45,28 @@ public class PrintJob implements Parcelable {
         }
     };
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mUri);
+        dest.writeString(mFilename);
+        dest.writeSerializable(mMimeType);
+        dest.writeSerializable(mFitMode);
+        dest.writeSerializable(mMarginsMode);
+    }
+
+    /* Parcelable implementation - END */
+
     public void setUri(String uri) {
         mUri = uri;
     }
 
     public String getUri() {
         return mUri;
-    }
-
-    public boolean exists() {
-        File aFile = new File(mUri);
-        return aFile.exists();
     }
 
     public String getFilename() {
@@ -89,17 +101,53 @@ public class PrintJob implements Parcelable {
         return mMarginsMode;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public boolean isValid() {
+        try {
+            // 1. Verify filename and URI are consistent. Check file exists:
+            if (!verifyFileIntegrity()) return false;
+
+            // 2. Verify Job type and file extension are consistent:
+            // 3. Verify Job type and fit mode are consistent:
+            // 4. Verify Job type and Margins are consistent:
+            switch (getMimeType()) {
+                case DOCUMENT:
+                    if (!getFilename().toUpperCase().endsWith(".PDF"))
+                        return false;
+                    if(getMarginsMode().equals(PrintingConstants.MarginsMode.NO_MARGINS))
+                        return false;
+                    break;
+
+                case IMAGE:
+                    if (!(getFilename().toUpperCase().endsWith(".JPG") || getFilename().toUpperCase().endsWith(".JPEG")
+                            || getFilename().toUpperCase().endsWith(".PNG")))
+                        return false;
+                    else {
+                        if (getFitMode().equals(PrintingConstants.FitMode.PASS_PDF_AS_IS))
+                            return false;
+                        else if (getFitMode().equals(PrintingConstants.FitMode.PRINT_CLIP_CONTENT))
+                            return false;
+                    }
+                    break;
+            }
+
+        // If any exception occurs, return false:
+        }catch (Exception ex) {
+            return false;
+        }
+
+        return true;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mUri);
-        dest.writeString(mFilename);
-        dest.writeSerializable(mMimeType);
-        dest.writeSerializable(mFitMode);
-        dest.writeSerializable(mMarginsMode);
+    /**
+     * Verifies file integrity.
+     * @return true if file exists and URI matches filename.
+     */
+    public boolean verifyFileIntegrity() {
+        return ((getUri().endsWith(getFilename())) && fileExists());
+    }
+
+    private boolean fileExists() {
+        File aFile = new File(mUri);
+        return aFile.exists();
     }
 }
