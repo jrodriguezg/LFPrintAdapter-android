@@ -143,7 +143,7 @@ public class PrintingSettingsActivity extends Activity {
 
             case IMAGE:
                 try{
-                    PrintHelper pHelper = new PrintHelper(this);
+                    com.jmrodrigg.printing.helper.PrintHelperKitkat pHelper = new com.jmrodrigg.printing.helper.PrintHelperKitkat(this.getBaseContext());
 
                     if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
@@ -153,7 +153,7 @@ public class PrintingSettingsActivity extends Activity {
                         throw new Exception("Print Mode not supported");
 
                     Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
-                    pHelper.printBitmap("image", bmp);
+                    pHelper.printBitmap("image", bmp,null);
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
