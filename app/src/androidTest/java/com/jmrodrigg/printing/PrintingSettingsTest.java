@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.mock.MockContext;
 
 import java.io.File;
 
@@ -17,12 +18,12 @@ import static org.mockito.Mockito.when;
  * Author: jrodriguezg
  * Date: 23/05/16.
  */
-public class PrintJobTest extends ActivityInstrumentationTestCase2<PrintingSettingsActivity> {
+public class PrintingSettingsTest extends ActivityInstrumentationTestCase2<PrintingSettingsActivity> {
     PrintingSettingsActivity mPrintingSettingsActivity;
 
     PrintJob mMockDocJob;
 
-    public PrintJobTest() {
+    public PrintingSettingsTest() {
         super(PrintingSettingsActivity.class);
     }
 
@@ -40,7 +41,7 @@ public class PrintJobTest extends ActivityInstrumentationTestCase2<PrintingSetti
         when(mMockDocJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         when(mMockDocJob.getMimeType()).thenReturn(PrintingConstants.JobType.DOCUMENT);
 
-        intent.setExtrasClassLoader(ClassLoader.getSystemClassLoader());
+        intent.setExtrasClassLoader(mMockDocJob.getClass().getClassLoader());
         intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mMockDocJob);
         setActivityIntent(intent);
         mPrintingSettingsActivity = getActivity();
