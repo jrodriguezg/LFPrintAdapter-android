@@ -4,6 +4,7 @@ import com.jmrodrigg.printing.model.PrintJob;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.*;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.when;
  * Date: 25/05/16.
  */
 public class PrintJobTest {
+    @Mock
     PrintJob mPrintJob;
 
     @Before
