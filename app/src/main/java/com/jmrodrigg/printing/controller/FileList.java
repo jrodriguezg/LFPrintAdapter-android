@@ -4,10 +4,10 @@ import android.os.Environment;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
- * Created by jrodriguezg on 23/05/16.
+ * Author: jrodriguezg
+ * Date: 23/05/16.
  */
 public class FileList extends ArrayList<File> {
 
@@ -62,7 +62,7 @@ public class FileList extends ArrayList<File> {
      * Check if a specific file extension is supported.
      * @return true if the file extension is supported.
      */
-    public static final boolean isSupportedFileExt(final File aFile) {
+    public static boolean isSupportedFileExt(final File aFile) {
         if (aFile.isDirectory())
             return true;
         else {
