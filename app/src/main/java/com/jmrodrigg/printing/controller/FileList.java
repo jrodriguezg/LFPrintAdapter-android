@@ -19,7 +19,19 @@ public class FileList extends ArrayList<File> {
      */
     public FileList() {
         mRootFolder = Environment.getExternalStorageDirectory();
-        mCurrentFolder = mRootFolder;
+        mCurrentFolder = getRootFolder();
+    }
+
+    public File getRootFolder() {
+        return mRootFolder;
+    }
+
+    public File getCurrentFolder() {
+        return mCurrentFolder;
+    }
+
+    public void setCurrentFolder(File mCurrentFolder) {
+        this.mCurrentFolder = mCurrentFolder;
     }
 
     /**
@@ -29,24 +41,24 @@ public class FileList extends ArrayList<File> {
     public String fillList() {
         this.clear();
 
-        for(File aFile:mCurrentFolder.listFiles()) {
+        for(File aFile:this.getCurrentFolder().listFiles()) {
             if (isSupportedFileExt(aFile)) this.add(aFile);
         }
 
-        String title = generateFolderTitle(mCurrentFolder);
+        String title = generateFolderTitle();
         return title.isEmpty() ? "/" : title;
     }
 
     public void loadChildFolder(int pos) {
-        mCurrentFolder = this.get(pos);
+        setCurrentFolder(this.get(pos));
     }
 
     public boolean isRootFolder() {
-        return mCurrentFolder.equals(mRootFolder);
+        return this.getCurrentFolder().equals(this.getRootFolder());
     }
 
     public void loadParentFolder() {
-        mCurrentFolder = mCurrentFolder.getParentFile();
+        setCurrentFolder(this.getCurrentFolder().getParentFile());
     }
 
     /**
@@ -54,8 +66,12 @@ public class FileList extends ArrayList<File> {
      * @return the path composed in form of a String.
      */
     private String generateFolderTitle(File folder) {
-        if (folder.equals(mRootFolder)) return "";
+        if (folder.equals(this.getRootFolder())) return "";
         else return generateFolderTitle(folder.getParentFile()) + "/" + folder.getName();
+    }
+
+    public String generateFolderTitle() {
+        return isRootFolder() ? "/" : generateFolderTitle(this.getCurrentFolder());
     }
 
     /**
