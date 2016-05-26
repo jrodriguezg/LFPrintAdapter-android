@@ -69,7 +69,7 @@ public class FileList extends ArrayList<File> {
             String filename = aFile.getAbsolutePath();
 
             if (filename.toUpperCase().endsWith(".PDF")
-                || filename.toUpperCase().endsWith(".JPEG") || filename.toUpperCase().endsWith(".JPEG")
+                || filename.toUpperCase().endsWith(".JPEG") || filename.toUpperCase().endsWith(".JPG")
                 || filename.toUpperCase().endsWith(".PNG"))
                 return true;
         }
