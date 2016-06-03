@@ -1,13 +1,14 @@
 package com.jmrodrigg.printing;
 
 import com.jmrodrigg.printing.model.PrintJob;
-import com.jmrodrigg.printing.samples.PrintCustomContent;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -111,8 +112,13 @@ public class Viewer extends Activity {
     }
 
     private void renderImage() {
-        Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
-        mView.setImageBitmap(bmp);
+        BitmapDrawable bmp = (BitmapDrawable) BitmapDrawable.createFromPath(mPrintJob.getUri());
+        bmp.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+
+        mView.setImageDrawable(bmp);
+
+//        Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
+//        mView.setImageBitmap(bmp);
 
         mPrevButton.setVisibility(View.GONE);
         mNextButton.setVisibility(View.GONE);
