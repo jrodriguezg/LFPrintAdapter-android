@@ -38,7 +38,7 @@ import java.util.Calendar;
  * Date: 18/11/2015.
  */
 public class RollHelper implements RollHelperConstants {
-    private static final String LOG_TAG = "PrintHelperKitkat";
+    private static final String LOG_TAG = "RollHelper";
     // will be <= 300 dpi on A4 (8.3×11.7) paper (worst case of 150 dpi)
     private final static int MAX_PRINT_SIZE = 3500;
     //private final static int MAX_PRINT_SIZE = 5000;
@@ -194,12 +194,9 @@ public class RollHelper implements RollHelperConstants {
                         mAttributes = newPrintAttributes;
                         mIsPreview = bundle.getBoolean(PrintDocumentAdapter.EXTRA_PRINT_PREVIEW);
 
-                        if (mIsPreview) {
-                            Log.d("JAS","Prepare for preview");
-                        }
-                        else{
-                            Log.d("JAS","Prepare for print");
-                        }
+                        if (mIsPreview) Log.d(LOG_TAG,"Prepare for preview.");
+                        else Log.d(LOG_TAG,"Prepare for print.");
+
                         PrintDocumentInfo info = new PrintDocumentInfo.Builder(jobName)
                                 .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
                                 .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
@@ -221,7 +218,7 @@ public class RollHelper implements RollHelperConstants {
                             Page page = pdfDocument.startPage(1);
 
                             RectF content = new RectF(page.getInfo().getContentRect());
-                            if(mOriginalBitmapLenght < bitmap.getHeight() && mOriginalBitmapWidth < bitmap.getWidth()){
+                            if (mOriginalBitmapLenght < bitmap.getHeight() && mOriginalBitmapWidth < bitmap.getWidth()){
                                 //generate a pdf with tiles
 
 
@@ -249,13 +246,12 @@ public class RollHelper implements RollHelperConstants {
                                         new PageRange[]{PageRange.ALL_PAGES});
                             } catch (IOException ioe) {
                                 // Failed.
-                                Log.e(LOG_TAG, "Error writing printed content", ioe);
+                                Log.e(LOG_TAG, "Error writing printed content.", ioe);
                                 writeResultCallback.onWriteFailed(null);
                             }
                         } finally {
-                            if (pdfDocument != null) {
-                                pdfDocument.close();
-                            }
+                            pdfDocument.close();
+
                             if (fileDescriptor != null) {
                                 try {
                                     fileDescriptor.close();
@@ -346,13 +342,11 @@ public class RollHelper implements RollHelperConstants {
                                  final LayoutResultCallback layoutResultCallback,
                                  Bundle bundle) {
 
+                Log.d(LOG_TAG, "onLayout() - Init.");
+
                 mIsPreview = bundle.getBoolean(PrintDocumentAdapter.EXTRA_PRINT_PREVIEW);
-                if (mIsPreview) {
-                    Log.d("JAS","Prepare for preview");
-                }
-                else{
-                    Log.d("JAS","Prepare for print");
-                }
+                if (mIsPreview) Log.d(LOG_TAG,"Prepare for preview.");
+                else Log.d(LOG_TAG,"Prepare for print.");
                 mAttributes = newPrintAttributes;
 
                 if (cancellationSignal.isCanceled()) {
@@ -421,6 +415,8 @@ public class RollHelper implements RollHelperConstants {
                         mLoadBitmap = null;
                     }
                 }.execute();
+
+                Log.d(LOG_TAG, "onLayout() - Finished.");
             }
 
             private void cancelLoad() {
@@ -453,36 +449,32 @@ public class RollHelper implements RollHelperConstants {
             public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor fileDescriptor,
                                 CancellationSignal cancellationSignal,
                                 WriteResultCallback writeResultCallback) {
-
-
                 PrintedPdfDocument pdfDocument;
-                if(isRoll(mAttributes.getMediaSize())){
-                    float aspectRatio=1.0f;
-                    if(mAttributes.getMediaSize().isPortrait()) {
-                        aspectRatio = (float) mBitmap.getWidth() / (float) mBitmap.getHeight();
-                    }
-                    else{
 
-                        aspectRatio =  (float) mBitmap.getHeight()/(float) mBitmap.getWidth();
+                Log.d(LOG_TAG, "onWrite() - Init.");
 
-                    }
-                    Log.e(LOG_TAG, "Printing file to roll: Size " + mBitmap.getWidth() + " x " + mBitmap.getHeight() + ", aspect ratio:" + aspectRatio);
+                if (isRoll(mAttributes.getMediaSize())) {
+                    float aspectRatio;
+
+                    if(mAttributes.getMediaSize().isPortrait()) aspectRatio = (float) mBitmap.getWidth() / (float) mBitmap.getHeight();
+                    else aspectRatio = (float) mBitmap.getHeight() / (float) mBitmap.getWidth();
+
+                    Log.d(LOG_TAG, "Printing file to roll.");
+                    Log.d(LOG_TAG, "Size: " + mBitmap.getWidth() + " x " + mBitmap.getHeight() + ". Aspect ratio: " + aspectRatio);
 
                     PrintAttributes.MediaSize oldMediaSize = mAttributes.getMediaSize();
-                    Log.e(LOG_TAG, "PageSize " + oldMediaSize.getWidthMils() + " x " + oldMediaSize.getHeightMils() + ", aspect ratio:" + aspectRatio);
+                    Log.d(LOG_TAG, "PageSize: " + oldMediaSize.getWidthMils() + " x " + oldMediaSize.getHeightMils() + ". Aspect ratio:" + aspectRatio);
                     int width = Math.min(oldMediaSize.getWidthMils(), 36000);
                     //int width = oldMediaSize.getWidthMils();
 
                     int pageHeight;
                     if(oldMediaSize.isPortrait()){
-                        Log.d(LOG_TAG, "onWrite: printing in portrait ");
-
-                        pageHeight=Math.round((float)width/aspectRatio);
+                        Log.d(LOG_TAG, "Portrait mode.");
+                        pageHeight = Math.round((float)width/aspectRatio);
                     }
                     else{
-                        Log.d(LOG_TAG, "onWrite: printing in landscape ");
-
-                        pageHeight=Math.round((float)width/aspectRatio);
+                        Log.d(LOG_TAG, "Landscape mode.");
+                        pageHeight = Math.round((float)width/aspectRatio);
                     }
                     PrintAttributes.MediaSize newMediaSize = new PrintAttributes.MediaSize(oldMediaSize.getId(),
                             "Test paper",
@@ -496,26 +488,23 @@ public class RollHelper implements RollHelperConstants {
                     Log.e(LOG_TAG, "PDF created: Size "+ width +" x "+pageHeight);
 
                     pdfDocument = new PrintedPdfDocument(mContext,mAttributes);
-                }
-                else {
+                } else {
                     //workaround to simnulate roll in paper
                     PrintAttributes.MediaSize oldMediaSize = mAttributes.getMediaSize();
                     int width = 36000;
 
                     int pageHeight;
-                    float aspectRatio=1.0f;
+                    float aspectRatio;
 
                     if(oldMediaSize.isPortrait()){
-                        Log.d(LOG_TAG, "onWrite: printing in portrait ");
+                        Log.d(LOG_TAG, "Portrait mode.");
                         aspectRatio = (float) mBitmap.getWidth() / (float) mBitmap.getHeight();
-
-                        pageHeight=Math.round((float)width/aspectRatio);
+                        pageHeight = Math.round((float)width/aspectRatio);
                     }
                     else{
-                        Log.d(LOG_TAG, "onWrite: printing in landscape ");
+                        Log.d(LOG_TAG, "Landscape mode.");
                         aspectRatio =  (float) mBitmap.getHeight()/(float) mBitmap.getWidth();
-
-                        pageHeight=Math.round((float)width/aspectRatio);
+                        pageHeight = Math.round((float)width/aspectRatio);
                     }
 
                     PrintAttributes.MediaSize newMediaSize = new PrintAttributes.MediaSize(oldMediaSize.getId(),
@@ -527,8 +516,8 @@ public class RollHelper implements RollHelperConstants {
                             .setResolution(mAttributes.getResolution())
                             .setMinMargins(mAttributes.getMinMargins())
                             .build();
-                    Log.e(LOG_TAG, "PDF created: Size "+ width +" x "+pageHeight);
-                    pdfDocument=new PrintedPdfDocument(mContext,
+                    Log.e(LOG_TAG, "PDF created - Size: " + width + " x " + pageHeight);
+                    pdfDocument = new PrintedPdfDocument(mContext,
                             mAttributes);
                 }
                 Bitmap maybeGrayscale = convertBitmapForColorMode(mBitmap,
@@ -538,7 +527,7 @@ public class RollHelper implements RollHelperConstants {
                     Page page = pdfDocument.startPage(1);
 
                     RectF content = new RectF(page.getInfo().getContentRect());
-                    Log.d(LOG_TAG,"content rect "+content.toString()+"," +content.width() +"x " + content.height());
+                    Log.d(LOG_TAG,"Content Rect: " + content.toString() + "," + content.width() + " x " + content.height());
                     if(!mIsPreview && mOriginalBitmapLenght > mBitmap.getHeight() && mOriginalBitmapWidth > mBitmap.getWidth()){
                         //generate a pdf with tiles
                         GeneratePDF(imageFile,page);
@@ -557,6 +546,10 @@ public class RollHelper implements RollHelperConstants {
                     pdfDocument.finishPage(page);
 
                     try {
+                        Log.d(LOG_TAG,"Writing print Job to file descriptor.");
+
+                        pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
+
                         if (false) {
                             // Save a copy in the External storage for debugging purposes:
                             long date = Calendar.getInstance().getTime().getTime();
@@ -564,16 +557,10 @@ public class RollHelper implements RollHelperConstants {
                             Log.d(LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf");
                         }
 
-                        Log.d(LOG_TAG,"Writing print Job to file descriptor.");
-
-                        pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
-
-                        Log.d(LOG_TAG,"onWrite() - Finished.");
-
                         writeResultCallback.onWriteFinished(new PageRange[]{PageRange.ALL_PAGES});
                     } catch (IOException ioe) {
                         // Failed.
-                        Log.e(LOG_TAG, "Error writing printed content", ioe);
+                        Log.e(LOG_TAG, "onWrite() - Finished with errors: Error writing printed content.", ioe);
                         writeResultCallback.onWriteFailed(null);
                     }
                 } finally {
@@ -591,6 +578,8 @@ public class RollHelper implements RollHelperConstants {
                     if (maybeGrayscale != mBitmap) {
                         maybeGrayscale.recycle();
                     }
+
+                    Log.d(LOG_TAG,"onWrite() - Finished.");
                 }
             }
         };
@@ -611,7 +600,7 @@ public class RollHelper implements RollHelperConstants {
 
     private void GeneratePDF(Uri file ,Page page){
         int block = 1024;
-        InputStream is = null;
+        InputStream is;
         try {
             is = mContext.getContentResolver().openInputStream(file);
             BitmapRegionDecoder decoder = BitmapRegionDecoder.
@@ -622,7 +611,7 @@ public class RollHelper implements RollHelperConstants {
             Matrix m = getMatrix(mOriginalBitmapWidth,mOriginalBitmapLenght,contentrec,0);
             page.getCanvas().setMatrix(m);
 
-            boolean accelerated= page.getCanvas().isHardwareAccelerated();
+//            boolean accelerated= page.getCanvas().isHardwareAccelerated();
             int height = mOriginalBitmapLenght;
             int width = mOriginalBitmapWidth;
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -631,7 +620,7 @@ public class RollHelper implements RollHelperConstants {
             options.inPreferQualityOverSpeed = false;
             //sample size
             options.inSampleSize = SUBSAMPLING_VALUE;
-            Log.d("JAS","page: "+width+"x"+height+ "density:" + page.getCanvas().getDensity());
+            Log.d(LOG_TAG,"Page: " + width + "x" + height + ". Density: " + page.getCanvas().getDensity());
             Bitmap tile;
             // loop block
             Paint paint = new Paint();
@@ -647,12 +636,12 @@ public class RollHelper implements RollHelperConstants {
                     // get hotizontal bounds limited by image width
                     tileBounds.left = j;
                     int w = j+block<width ? block : width-j;
-                    tileBounds.right = j+w;
+                    tileBounds.right = j + w;
                     // load tile
                     tile = decoder.decodeRegion(tileBounds, options);
                     page.getCanvas().drawBitmap(tile,new Rect(0,0,block/options.inSampleSize,block/options.inSampleSize),new Rect(tileBounds.left,tileBounds.top,tileBounds.right,tileBounds.bottom),null);
                     
-                    Log.d("JAS","drawing tile on: "+i+"x"+j+" bitmap "+tile.getWidth()+"x"+tile.getHeight());
+                    Log.d(LOG_TAG,"Drawing tile on " + i + "x" + j + ". Bitmap: " + tile.getWidth() + "x" + tile.getHeight());
                     tile.recycle();
                 }
             }
@@ -660,8 +649,6 @@ public class RollHelper implements RollHelperConstants {
         catch (Exception ex){
             ex.printStackTrace();
         }
-
-
     }
 
     /**
@@ -731,16 +718,14 @@ public class RollHelper implements RollHelperConstants {
         try {
             is = mContext.getContentResolver().openInputStream(uri);
             return BitmapFactory.decodeStream(is, null, o);
-        }
-        catch (Exception ex){
+        } catch (Exception ex){
             ex.printStackTrace();
-        }
-        finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException t) {
-                    Log.w(LOG_TAG, "close fail ", t);
+                    Log.e(LOG_TAG, "Failed to close InputStream.", t);
                 }
             }
         }
