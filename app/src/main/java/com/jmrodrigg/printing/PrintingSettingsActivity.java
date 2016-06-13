@@ -5,8 +5,7 @@ import com.jmrodrigg.printing.model.PrintJob;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.print.PrintManager;
 import android.support.v4.print.PrintHelper;
@@ -16,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioButton;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -143,7 +143,7 @@ public class PrintingSettingsActivity extends Activity {
 
             case IMAGE:
                 try{
-                    com.jmrodrigg.printing.helper.PrintHelperKitkat pHelper = new com.jmrodrigg.printing.helper.PrintHelperKitkat(this.getBaseContext());
+                    com.jmrodrigg.printing.helper.RollHelper pHelper = new com.jmrodrigg.printing.helper.RollHelper(this.getBaseContext());
 
                     if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
@@ -152,8 +152,8 @@ public class PrintingSettingsActivity extends Activity {
                     } else
                         throw new Exception("Print Mode not supported");
 
-                    Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
-                    pHelper.printBitmap("image", bmp,null);
+                    File f = new File(mPrintJob.getUri());
+                    pHelper.printBitmap("image", Uri.fromFile(f), null);
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
