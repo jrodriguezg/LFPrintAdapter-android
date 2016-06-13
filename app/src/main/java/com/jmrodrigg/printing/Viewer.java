@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -112,13 +110,20 @@ public class Viewer extends Activity {
     }
 
     private void renderImage() {
-        BitmapDrawable bmp = (BitmapDrawable) BitmapDrawable.createFromPath(mPrintJob.getUri());
-        bmp.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+//        BitmapDrawable bmp = (BitmapDrawable) BitmapDrawable.createFromPath(mPrintJob.getUri());
+//        bmp.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
-        mView.setImageDrawable(bmp);
+        // 1.- First decode the image to gather dimensions (inJustDecodeBounds = true):
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mPrintJob.getUri(),opts);
 
-//        Bitmap bmp = BitmapFactory.decodeFile(mPrintJob.getUri());
-//        mView.setImageBitmap(bmp);
+        // 2.- Adjust the image:
+        opts.inSampleSize = calculateInSampleSize(opts, 1024, 1024);
+
+        // 3.- Render the whole Bitmap in the final desired size:
+        opts.inJustDecodeBounds = false;
+        mView.setImageBitmap(BitmapFactory.decodeFile(mPrintJob.getUri(),opts));
 
         mPrevButton.setVisibility(View.GONE);
         mNextButton.setVisibility(View.GONE);
@@ -154,4 +159,28 @@ public class Viewer extends Activity {
                 break;
         }
     }
+
+    public static int calculateInSampleSize(
+        BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                     || (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
 }
