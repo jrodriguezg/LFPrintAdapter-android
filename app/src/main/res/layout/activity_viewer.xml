@@ -9,7 +9,7 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Prev Page"
+        android:text="@string/btn_prevPage"
         android:id="@+id/prevPage"
         android:layout_gravity="start"
         android:layout_alignParentBottom="true"
@@ -19,13 +19,14 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Next Page"
+        android:text="@string/btn_nextPage"
         android:id="@+id/nextPage"
         android:layout_gravity="end"
         android:layout_alignParentTop="false"
         android:layout_alignParentStart="false"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        tools:ignore="RelativeOverlap" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -33,7 +34,8 @@
         android:scaleType="fitCenter"
         android:id="@+id/imageView"
         android:layout_gravity="center"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true"
+        tools:ignore="ContentDescription" />
 
     <android.support.v4.widget.ContentLoadingProgressBar
         android:id="@+id/progressSpinner"

@@ -13,6 +13,10 @@
     <string name="menu_item_print">Print</string>
     <string name="menu_item_sample">View Android Sample Code</string>
 
+    <!-- Buttons -->
+    <string name="btn_prevPage">Prev Page</string>
+    <string name="btn_nextPage">Next Page</string>
+
     <!-- Radio Buttons -->
     <string name="label_print_mode">Print Mode</string>
     <string name="radio_button_print_mode_fit">Fit to Page</string>
