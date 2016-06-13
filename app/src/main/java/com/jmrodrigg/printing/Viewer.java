@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * Author: jrodriguezg
@@ -113,20 +115,26 @@ public class Viewer extends Activity {
 //        BitmapDrawable bmp = (BitmapDrawable) BitmapDrawable.createFromPath(mPrintJob.getUri());
 //        bmp.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
+        BitmapWorkerTask task = new BitmapWorkerTask(mView);
+        task.execute(mPrintJob.getUri());
+
+        mPrevButton.setVisibility(View.GONE);
+        mNextButton.setVisibility(View.GONE);
+    }
+
+    private Bitmap decodeBitmap(String uri) {
         // 1.- First decode the image to gather dimensions (inJustDecodeBounds = true):
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(mPrintJob.getUri(),opts);
+        BitmapFactory.decodeFile(uri,opts);
 
         // 2.- Adjust the image:
         opts.inSampleSize = calculateInSampleSize(opts, 1024, 1024);
 
         // 3.- Render the whole Bitmap in the final desired size:
         opts.inJustDecodeBounds = false;
-        mView.setImageBitmap(BitmapFactory.decodeFile(mPrintJob.getUri(),opts));
 
-        mPrevButton.setVisibility(View.GONE);
-        mNextButton.setVisibility(View.GONE);
+        return BitmapFactory.decodeFile(uri,opts);
     }
 
     @Override
@@ -160,8 +168,7 @@ public class Viewer extends Activity {
         }
     }
 
-    public static int calculateInSampleSize(
-        BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -181,6 +188,32 @@ public class Viewer extends Activity {
         }
 
         return inSampleSize;
+    }
+
+
+    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
+
+        private WeakReference<ImageView> imgViewRef;
+
+        public BitmapWorkerTask(ImageView imgView) {
+            imgViewRef = new WeakReference<>(imgView);
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            String uri = strings[0];
+            return decodeBitmap(uri);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if ((imgViewRef != null) && bitmap != null) {
+                final ImageView imageView = imgViewRef.get();
+                if (imageView != null) {
+                    imageView.setImageBitmap(bitmap);
+                }
+            }
+        }
     }
 
 }
