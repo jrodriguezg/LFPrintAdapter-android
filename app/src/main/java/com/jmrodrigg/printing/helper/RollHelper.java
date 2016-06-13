@@ -27,12 +27,11 @@ import android.print.pdf.PrintedPdfDocument;
 import android.util.Log;
 import android.graphics.pdf.PdfDocument.Page;
 
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
 
 /**
  * Author: jsanchez
@@ -88,7 +87,7 @@ public class RollHelper {
     int mOrientation = ORIENTATION_LANDSCAPE;
 
     boolean mIsPreview;
-    RollHelper(Context context) {
+    public RollHelper(Context context) {
         mContext = context;
     }
 
@@ -558,22 +557,20 @@ public class RollHelper {
                     pdfDocument.finishPage(page);
 
                     try {
-                        pdfDocument.writeTo(new FileOutputStream(
-                                fileDescriptor.getFileDescriptor()));
                         if (false) {
-                            // Write the document.
-
-                            File sdCard = Environment.getExternalStorageDirectory();
-                            File dir = new File(sdCard.getAbsolutePath() + "/Download");
-                            File file = new File(dir, "file.pdf");
-                            pdfDocument.writeTo(new FileOutputStream(
-                                    file));
+                            // Save a copy in the External storage for debugging purposes:
+                            long date = Calendar.getInstance().getTime().getTime();
+                            pdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf"));
+                            Log.d(LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf");
                         }
-                        // Done.
-                        Log.e(LOG_TAG, "Saving PDF file to "+fileDescriptor.toString());
 
-                        writeResultCallback.onWriteFinished(
-                                new PageRange[]{PageRange.ALL_PAGES});
+                        Log.d(LOG_TAG,"Writing print Job to file descriptor.");
+
+                        pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
+
+                        Log.d(LOG_TAG,"onWrite() - Finished.");
+
+                        writeResultCallback.onWriteFinished(new PageRange[]{PageRange.ALL_PAGES});
                     } catch (IOException ioe) {
                         // Failed.
                         Log.e(LOG_TAG, "Error writing printed content", ioe);
