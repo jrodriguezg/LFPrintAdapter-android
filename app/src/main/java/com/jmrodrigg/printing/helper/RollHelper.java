@@ -218,12 +218,11 @@ public class RollHelper implements RollHelperConstants {
                             Page page = pdfDocument.startPage(1);
 
                             RectF content = new RectF(page.getInfo().getContentRect());
-                            if (mOriginalBitmapLenght < bitmap.getHeight() && mOriginalBitmapWidth < bitmap.getWidth()){
+                            if (mOriginalBitmapLenght < bitmap.getHeight() && mOriginalBitmapWidth < bitmap.getWidth()) {
                                 //generate a pdf with tiles
 
 
-                            }
-                            else {
+                            } else {
                                 //use scalled down bitmap
 
                                 Matrix matrix = getMatrix(
@@ -286,34 +285,25 @@ public class RollHelper implements RollHelperConstants {
      */
     private Matrix getMatrix(int imageWidth, int imageHeight, RectF content, int fittingMode) {
         Matrix matrix = new Matrix();
-        float scale=1.0f;
-        if(content.width() > content.height()){
+        float scale;
+        if (content.width() > content.height()) {
             //portrait , fit to content width
-            scale = (content.width()-content.left) / imageWidth;
+            scale = (content.width() - content.left) / imageWidth;
 
             matrix.postScale(scale, scale);
-        }
-        else{
+        } else{
             //landscape, fit to content height
-            scale = (content.height()-content.top) / imageWidth;
+            scale = (content.height() - content.top) / imageWidth;
             matrix.postRotate(90);
             matrix.postScale(scale, scale);
-
             matrix.postTranslate(content.width(),0f);
-
-
         }
+
         return matrix;
     }
 
     protected boolean isRoll(PrintAttributes.MediaSize size){
-        if(size.getId().contains("roll_current")){
-            return true;
-        }
-        else{
-            return false;
-
-        }
+        return size.getId().contains("roll_current");
     }
 
 
@@ -564,9 +554,8 @@ public class RollHelper implements RollHelperConstants {
                         writeResultCallback.onWriteFailed(null);
                     }
                 } finally {
-                    if (pdfDocument != null) {
-                        pdfDocument.close();
-                    }
+                    pdfDocument.close();
+
                     if (fileDescriptor != null) {
                         try {
                             fileDescriptor.close();
@@ -687,10 +676,10 @@ public class RollHelper implements RollHelperConstants {
         }
 
         // Make sure sample size is reasonable
-        if (sampleSize <= 0 || 0 >= (int) (Math.min(w, h) / sampleSize)) {
+        if (sampleSize <= 0 || 0 >= (Math.min(w, h) / sampleSize)) {
             return null;
         }
-        BitmapFactory.Options decodeOptions = null;
+        BitmapFactory.Options decodeOptions;
         synchronized (mLock) { // prevent race with set null below
             mDecodeOptions = new BitmapFactory.Options();
             mDecodeOptions.inMutable = true;
