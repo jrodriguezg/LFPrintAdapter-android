@@ -37,7 +37,7 @@ import java.util.Calendar;
  * Author: jsanchez
  * Date: 18/11/2015.
  */
-public class RollHelper {
+public class RollHelper implements RollHelperConstants {
     private static final String LOG_TAG = "PrintHelperKitkat";
     // will be <= 300 dpi on A4 (8.3×11.7) paper (worst case of 150 dpi)
     private final static int MAX_PRINT_SIZE = 3500;
@@ -626,12 +626,11 @@ public class RollHelper {
             int height = mOriginalBitmapLenght;
             int width = mOriginalBitmapWidth;
             BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            //options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            options.inPreferredConfig = COLOR_CONFIG;
             options.inDither = false;
             options.inPreferQualityOverSpeed = false;
             //sample size
-            options.inSampleSize = 2;
+            options.inSampleSize = SUBSAMPLING_VALUE;
             Log.d("JAS","page: "+width+"x"+height+ "density:" + page.getCanvas().getDensity());
             Bitmap tile;
             // loop block
