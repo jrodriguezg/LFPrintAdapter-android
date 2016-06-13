@@ -11,6 +11,7 @@ import android.graphics.pdf.PdfRenderer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import java.lang.ref.WeakReference;
 public class Viewer extends Activity {
 
     private ImageView mView;
+    private ContentLoadingProgressBar mProgressSpinner;
     private int mCurrentPage;
     private Button mPrevButton, mNextButton;
     private PrintJob mPrintJob;
@@ -43,6 +45,7 @@ public class Viewer extends Activity {
 
         // ImageView:
         mView = (ImageView) findViewById(R.id.imageView);
+        mProgressSpinner = (ContentLoadingProgressBar) findViewById(R.id.progressSpinner);
 
         // Buttons:
         mPrevButton = (Button) findViewById(R.id.prevPage);
@@ -112,10 +115,9 @@ public class Viewer extends Activity {
     }
 
     private void renderImage() {
-//        BitmapDrawable bmp = (BitmapDrawable) BitmapDrawable.createFromPath(mPrintJob.getUri());
-//        bmp.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        mProgressSpinner.setVisibility(View.VISIBLE);
 
-        BitmapWorkerTask task = new BitmapWorkerTask(mView);
+        BitmapWorkerTask task = new BitmapWorkerTask(mView, mProgressSpinner);
         task.execute(mPrintJob.getUri());
 
         mPrevButton.setVisibility(View.GONE);
@@ -193,10 +195,12 @@ public class Viewer extends Activity {
 
     class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
 
-        private WeakReference<ImageView> imgViewRef;
+        private WeakReference<ImageView> mImgViewRef;
+        private WeakReference<ContentLoadingProgressBar> mProgressSpinnerRef;
 
-        public BitmapWorkerTask(ImageView imgView) {
-            imgViewRef = new WeakReference<>(imgView);
+        public BitmapWorkerTask(ImageView imgView, ContentLoadingProgressBar progressSpinner) {
+            mImgViewRef = new WeakReference<>(imgView);
+            mProgressSpinnerRef = new WeakReference<>(progressSpinner);
         }
 
         @Override
@@ -207,10 +211,15 @@ public class Viewer extends Activity {
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-            if ((imgViewRef != null) && bitmap != null) {
-                final ImageView imageView = imgViewRef.get();
+            if ((mImgViewRef != null) && bitmap != null) {
+                final ImageView imageView = mImgViewRef.get();
                 if (imageView != null) {
                     imageView.setImageBitmap(bitmap);
+
+                    if (mProgressSpinnerRef != null) {
+                        final ContentLoadingProgressBar progressSpinner = mProgressSpinnerRef.get();
+                        progressSpinner.setVisibility(View.GONE);
+                    }
                 }
             }
         }
