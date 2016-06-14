@@ -43,17 +43,8 @@ public class RollHelper implements RollHelperConstants {
     private final Context mContext;
     private BitmapFactory.Options mDecodeOptions = null;
     private final Object mLock = new Object();
-    private  int mOriginalBitmapWidth;
-    private  int mOriginalBitmapLenght;
-
-    /**
-     * image will be scaled but leave white space
-     */
-    public static final int SCALE_MODE_FIT = 1;
-    /**
-     * image will fill the paper and be cropped (default)
-     */
-    public static final int SCALE_MODE_FILL = 2;
+    private int mOriginalBitmapWidth;
+    private int mOriginalBitmapLenght;
 
     /**
      * select landscape (default)
@@ -75,10 +66,8 @@ public class RollHelper implements RollHelperConstants {
     public static final int COLOR_MODE_COLOR = 2;
 
     public interface OnPrintFinishCallback {
-        public void onFinish();
+        void onFinish();
     }
-
-    int mScaleMode = SCALE_MODE_FILL;
 
     int mColorMode = COLOR_MODE_COLOR;
 
@@ -91,30 +80,6 @@ public class RollHelper implements RollHelperConstants {
     }
 
     /**
-     * Selects whether the image will fill the paper and be cropped
-     * <p/>
-     * {@link #SCALE_MODE_FIT}
-     * or whether the image will be scaled but leave white space
-     * {@link #SCALE_MODE_FILL}.
-     *
-     * @param scaleMode {@link #SCALE_MODE_FIT} or
-     *                  {@link #SCALE_MODE_FILL}
-     */
-    public void setScaleMode(int scaleMode) {
-        mScaleMode = scaleMode;
-    }
-
-    /**
-     * Returns the scale mode with which the image will fill the paper.
-     *
-     * @return The scale Mode: {@link #SCALE_MODE_FIT} or
-     * {@link #SCALE_MODE_FILL}
-     */
-    public int getScaleMode() {
-        return mScaleMode;
-    }
-
-    /**
      * Sets whether the image will be printed in color (default)
      * {@link #COLOR_MODE_COLOR} or in back and white
      * {@link #COLOR_MODE_MONOCHROME}.
@@ -122,6 +87,7 @@ public class RollHelper implements RollHelperConstants {
      * @param colorMode The color mode which is one of
      *                  {@link #COLOR_MODE_COLOR} and {@link #COLOR_MODE_MONOCHROME}.
      */
+    @SuppressWarnings("unused")
     public void setColorMode(int colorMode) {
         mColorMode = colorMode;
     }
@@ -132,6 +98,7 @@ public class RollHelper implements RollHelperConstants {
      * @param orientation The page orientation which is one of
      *                    {@link #ORIENTATION_LANDSCAPE} or {@link #ORIENTATION_PORTRAIT}.
      */
+    @SuppressWarnings("unused")
     public void setOrientation(int orientation) {
         mOrientation = orientation;
     }
@@ -142,6 +109,7 @@ public class RollHelper implements RollHelperConstants {
      * @return The preferred orientation which is one of
      * {@link #ORIENTATION_LANDSCAPE} or {@link #ORIENTATION_PORTRAIT}
      */
+    @SuppressWarnings("unused")
     public int getOrientation() {
         return mOrientation;
     }
@@ -152,124 +120,9 @@ public class RollHelper implements RollHelperConstants {
      * @return The color mode which is one of {@link #COLOR_MODE_COLOR}
      * and {@link #COLOR_MODE_MONOCHROME}.
      */
+    @SuppressWarnings("unused")
     public int getColorMode() {
         return mColorMode;
-    }
-
-    /**
-     * Prints a bitmap.
-     *
-     * @param jobName The print job name.
-     * @param bitmap  The bitmap to print.
-     * @param callback Optional callback to observe when printing is finished.
-     */
-    public void printBitmap(final String jobName, final Bitmap bitmap,
-                            final OnPrintFinishCallback callback) {
-        if (bitmap == null) {
-            return;
-        }
-        final int fittingMode = mScaleMode; // grab the fitting mode at time of call
-        PrintManager printManager = (PrintManager) mContext.getSystemService(Context.PRINT_SERVICE);
-        PrintAttributes.MediaSize mediaSize = PrintAttributes.MediaSize.UNKNOWN_PORTRAIT;
-        if (bitmap.getWidth() > bitmap.getHeight()) {
-            mediaSize = PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE;
-        }
-        PrintAttributes attr = new PrintAttributes.Builder()
-                .setMediaSize(mediaSize)
-                .setColorMode(mColorMode)
-                .build();
-
-        printManager.print(jobName,
-                new PrintDocumentAdapter() {
-                    private PrintAttributes mAttributes;
-
-                    @Override
-                    public void onLayout(PrintAttributes oldPrintAttributes,
-                                         PrintAttributes newPrintAttributes,
-                                         CancellationSignal cancellationSignal,
-                                         LayoutResultCallback layoutResultCallback,
-                                         Bundle bundle) {
-
-                        mAttributes = newPrintAttributes;
-                        mIsPreview = bundle.getBoolean(PrintDocumentAdapter.EXTRA_PRINT_PREVIEW);
-
-                        if (mIsPreview) Log.d(LOG_TAG,"Prepare for preview.");
-                        else Log.d(LOG_TAG,"Prepare for print.");
-
-                        PrintDocumentInfo info = new PrintDocumentInfo.Builder(jobName)
-                                .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
-                                .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
-                                .build();
-                        boolean changed = !newPrintAttributes.equals(oldPrintAttributes);
-                        layoutResultCallback.onLayoutFinished(info, changed);
-                    }
-
-                    @Override
-                    public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor fileDescriptor,
-                                        CancellationSignal cancellationSignal,
-                                        WriteResultCallback writeResultCallback) {
-                        PrintedPdfDocument pdfDocument = new PrintedPdfDocument(mContext,
-                                mAttributes);
-
-                        Bitmap maybeGrayscale = convertBitmapForColorMode(bitmap,
-                                mAttributes.getColorMode());
-                        try {
-                            Page page = pdfDocument.startPage(1);
-
-                            RectF content = new RectF(page.getInfo().getContentRect());
-                            if (mOriginalBitmapLenght < bitmap.getHeight() && mOriginalBitmapWidth < bitmap.getWidth()) {
-                                //generate a pdf with tiles
-
-
-                            } else {
-                                //use scalled down bitmap
-
-                                Matrix matrix = getMatrix(
-                                        maybeGrayscale.getWidth(), content);
-
-                                // Draw the bitmap.
-                                page.getCanvas().drawBitmap(maybeGrayscale, matrix, null);
-
-                                // Finish the page.
-                                pdfDocument.finishPage(page);
-                            }
-
-                            try {
-                                // Write the document.
-                                pdfDocument.writeTo(new FileOutputStream(
-                                        fileDescriptor.getFileDescriptor()));
-                                // Done.
-                                writeResultCallback.onWriteFinished(
-                                        new PageRange[]{PageRange.ALL_PAGES});
-                            } catch (IOException ioe) {
-                                // Failed.
-                                Log.e(LOG_TAG, "Error writing printed content.", ioe);
-                                writeResultCallback.onWriteFailed(null);
-                            }
-                        } finally {
-                            pdfDocument.close();
-
-                            if (fileDescriptor != null) {
-                                try {
-                                    fileDescriptor.close();
-                                } catch (IOException ioe) {
-                                    /* ignore */
-                                }
-                            }
-                            // If we created a new instance for grayscaling, then recycle it here.
-                            if (maybeGrayscale != bitmap) {
-                                maybeGrayscale.recycle();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        if (callback != null) {
-                            callback.onFinish();
-                        }
-                    }
-                }, attr);
     }
 
     /**
@@ -322,8 +175,6 @@ public class RollHelper implements RollHelperConstants {
      */
     public void printBitmap(final String jobName, final Uri imageFile,
                             final OnPrintFinishCallback callback) throws FileNotFoundException {
-        final int fittingMode = mScaleMode;
-
         PrintDocumentAdapter printDocumentAdapter = new PrintDocumentAdapter() {
             private PrintAttributes mAttributes;
             AsyncTask<Uri, Boolean, Bitmap> mLoadBitmap;
@@ -440,7 +291,6 @@ public class RollHelper implements RollHelperConstants {
                     mBitmap = null;
                 }
             }
-
 
             @Override
             public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor fileDescriptor,
