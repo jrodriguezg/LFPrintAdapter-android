@@ -352,7 +352,7 @@ public class RollHelper implements RollHelperConstants {
                             .build();
                     boolean changed = !newPrintAttributes.equals(oldPrintAttributes);
                     Log.d(LOG_TAG, "onLayout() - Finished.");
-                    layoutResultCallback.onLayoutFinished(info, changed);
+                    layoutResultCallback.onLayoutFinished(info, changed || !mIsPreview);
                     return;
                 }
 
