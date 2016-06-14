@@ -85,6 +85,7 @@ public class RollHelper implements RollHelperConstants {
     int mOrientation = ORIENTATION_LANDSCAPE;
 
     boolean mIsPreview;
+
     public RollHelper(Context context) {
         mContext = context;
     }
@@ -224,8 +225,7 @@ public class RollHelper implements RollHelperConstants {
                                 //use scalled down bitmap
 
                                 Matrix matrix = getMatrix(
-                                        maybeGrayscale.getWidth(), maybeGrayscale.getHeight(),
-                                        content, fittingMode);
+                                        maybeGrayscale.getWidth(), content);
 
                                 // Draw the bitmap.
                                 page.getCanvas().drawBitmap(maybeGrayscale, matrix, null);
@@ -273,24 +273,23 @@ public class RollHelper implements RollHelperConstants {
     }
 
     /**
-     * Calculates the transform the print an Image to fill the page
+     * Calculates the transform {@link Matrix} to print an image. It will always fit to roll width
+     * according to the selected orientation.
      *
-     * @param imageWidth  with of bitmap
-     * @param imageHeight height of bitmap
-     * @param content     The output page dimensions
-     * @param fittingMode The mode of fitting {@link #SCALE_MODE_FILL} vs {@link #SCALE_MODE_FIT}
-     * @return Matrix to be used in canvas.drawBitmap(bitmap, matrix, null) call
+     * @param imageWidth width of the image that will be printed.
+     * @param content a {@link Rect} that defines the output page dimensions.
+     * @return {@link Matrix} to be used to transform the @{Bitmap} that will be drawn.
      */
-    private Matrix getMatrix(int imageWidth, int imageHeight, RectF content, int fittingMode) {
+    private Matrix getMatrix(int imageWidth, RectF content) {
         Matrix matrix = new Matrix();
         float scale;
         if (content.width() > content.height()) {
-            //portrait , fit to content width
+            //portrait - fit to content width:
             scale = (content.width() - content.left) / imageWidth;
 
             matrix.postScale(scale, scale);
         } else{
-            //landscape, fit to content height
+            //landscape - fit to content height:
             scale = (content.height() - content.top) / imageWidth;
             matrix.postRotate(90);
             matrix.postScale(scale, scale);
@@ -300,6 +299,14 @@ public class RollHelper implements RollHelperConstants {
         return matrix;
     }
 
+    /**
+     * Checks if a given MediaSize is encapsulating a roll media.
+     * With the current framework, it is only possible by checking the MediaSize ID: HP Print
+     * Service Plugin ensures that a roll media size id will contain the string "roll_current".
+     *
+     * @param size The media size to check.
+     * @return true if the MediaSize is mapping a roll, false otherwise.
+     */
     protected boolean isRoll(PrintAttributes.MediaSize size){
         return size.getId().contains("roll_current");
     }
@@ -524,8 +531,7 @@ public class RollHelper implements RollHelperConstants {
                     }
                     else {
                         // Compute and apply scale to fill the page.
-                        Matrix matrix = getMatrix(mBitmap.getWidth(), mBitmap.getHeight(),
-                                content, fittingMode);
+                        Matrix matrix = getMatrix(mBitmap.getWidth(), content);
 
                         // Draw the bitmap.
                         page.getCanvas().drawBitmap(maybeGrayscale, matrix, null);
@@ -586,16 +592,23 @@ public class RollHelper implements RollHelperConstants {
         printManager.print(jobName, printDocumentAdapter, attr);
     }
 
-    private void GeneratePDF(Uri file ,Page page){
+    /**
+     * Draws a file in a {@link Page} following a tile-based strategy, which allows to render large
+     * images without memory exceptions.
+     *
+     * @param uri Location of a valid image.
+     * @param page The Page where the given file will be drawn.
+     */
+    private void GeneratePDF(Uri uri, Page page){
         InputStream is;
         try {
-            is = mContext.getContentResolver().openInputStream(file);
+            is = mContext.getContentResolver().openInputStream(uri);
             BitmapRegionDecoder decoder = BitmapRegionDecoder.
                     newInstance(is, false);
             Rect tileBounds = new Rect();
             RectF contentRect = new RectF(page.getInfo().getContentRect());
             //set matrix for rotation and/or scale
-            Matrix m = getMatrix(mOriginalBitmapWidth,mOriginalBitmapLenght, contentRect, 0);
+            Matrix m = getMatrix(mOriginalBitmapWidth, contentRect);
             page.getCanvas().setMatrix(m);
 
             int height = mOriginalBitmapLenght;
@@ -632,6 +645,14 @@ public class RollHelper implements RollHelperConstants {
         }
     }
 
+    /**
+     * Creates a {@link android.graphics.BitmapFactory.Options} object with the rendering parameters.
+     * This rendering parameters can be set by modifying the constants in {@link RollHelperConstants}.
+     * Please note that the modification of this parameters will impact over the rendering time of the
+     * print job.
+     *
+     * @return The {@link android.graphics.BitmapFactory.Options} that have been set.
+     */
     private BitmapFactory.Options setBitmapOptions() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = COLOR_CONFIG;
@@ -642,12 +663,12 @@ public class RollHelper implements RollHelperConstants {
     }
 
     /**
-     * Loads a bitmap while limiting its size
+     * Loads a bitmap while limiting its size.
      *
-     * @param uri           location of a valid image
-     * @param maxSideLength the maximum length of a size
+     * @param uri Location of a valid image
+     * @param maxSideLength The maximum length of a size
      * @return the Bitmap
-     * @throws FileNotFoundException if the Uri does not point to an image
+     * @throws FileNotFoundException if the Uri does not resolves to an image.
      */
     private Bitmap loadConstrainedBitmap(Uri uri, int maxSideLength) throws FileNotFoundException {
         if (maxSideLength <= 0 || uri == null || mContext == null) {
@@ -697,17 +718,20 @@ public class RollHelper implements RollHelperConstants {
     }
 
     /**
-     * Returns the bitmap from the given uri loaded using the given options.
-     * Returns null on failure.
+     *
+     * @param uri Location of a valid image.
+     * @param options The rendering options.
+     * @return The bitmap from the given uri loaded using the given options. Otherwise, it returns null.
+     * @throws FileNotFoundException if the Uri does not resolves to an image.
      */
-    private Bitmap loadBitmap(Uri uri, BitmapFactory.Options o) throws FileNotFoundException {
+    private Bitmap loadBitmap(Uri uri, BitmapFactory.Options options) throws FileNotFoundException {
         if (uri == null || mContext == null) {
             throw new IllegalArgumentException("bad argument to loadBitmap");
         }
         InputStream is = null;
         try {
             is = mContext.getContentResolver().openInputStream(uri);
-            return BitmapFactory.decodeStream(is, null, o);
+            return BitmapFactory.decodeStream(is, null, options);
         } catch (Exception ex){
             ex.printStackTrace();
         } finally {
@@ -722,6 +746,14 @@ public class RollHelper implements RollHelperConstants {
         return null;
     }
 
+
+    /**
+     * Converts a {@link Bitmap} by applying a given <code>colorMode</code>.
+     *
+     * @param original The original {@link Bitmap} that will be converted.
+     * @param colorMode The colorMode to apply on the {@param original} {@link Bitmap}.
+     * @return The result of applying the given <code>colorMode</code> on the original {@link Bitmap}.
+     */
     private Bitmap convertBitmapForColorMode(Bitmap original, int colorMode) {
         if (colorMode != COLOR_MODE_MONOCHROME) {
             return original;
