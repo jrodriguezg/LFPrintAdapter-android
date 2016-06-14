@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
@@ -41,9 +40,8 @@ public class RollHelper implements RollHelperConstants {
     private static final String LOG_TAG = "RollHelper";
     // will be <= 300 dpi on A4 (8.3×11.7) paper (worst case of 150 dpi)
     private final static int MAX_PRINT_SIZE = 3500;
-    //private final static int MAX_PRINT_SIZE = 5000;
-    final Context mContext;
-    BitmapFactory.Options mDecodeOptions = null;
+    private final Context mContext;
+    private BitmapFactory.Options mDecodeOptions = null;
     private final Object mLock = new Object();
     private  int mOriginalBitmapWidth;
     private  int mOriginalBitmapLenght;
@@ -306,7 +304,6 @@ public class RollHelper implements RollHelperConstants {
         return size.getId().contains("roll_current");
     }
 
-
     /**
      * Prints an image located at the Uri. Image types supported are those of
      * <code>BitmapFactory.decodeStream</code> (JPEG, GIF, PNG, BMP, WEBP)
@@ -513,8 +510,8 @@ public class RollHelper implements RollHelperConstants {
                     pdfDocument = new PrintedPdfDocument(mContext,
                             mAttributes);
                 }
-                Bitmap maybeGrayscale = convertBitmapForColorMode(mBitmap,
-                        mAttributes.getColorMode());
+                Bitmap maybeGrayscale = convertBitmapForColorMode(mBitmap, mAttributes.getColorMode());
+
                 try {
 
                     Page page = pdfDocument.startPage(1);
@@ -590,47 +587,40 @@ public class RollHelper implements RollHelperConstants {
     }
 
     private void GeneratePDF(Uri file ,Page page){
-        int block = 1024;
         InputStream is;
         try {
             is = mContext.getContentResolver().openInputStream(file);
             BitmapRegionDecoder decoder = BitmapRegionDecoder.
                     newInstance(is, false);
             Rect tileBounds = new Rect();
-            RectF contentrec= new RectF(page.getInfo().getContentRect());
+            RectF contentRect = new RectF(page.getInfo().getContentRect());
             //set matrix for rotation and/or scale
-            Matrix m = getMatrix(mOriginalBitmapWidth,mOriginalBitmapLenght,contentrec,0);
+            Matrix m = getMatrix(mOriginalBitmapWidth,mOriginalBitmapLenght, contentRect, 0);
             page.getCanvas().setMatrix(m);
 
-//            boolean accelerated= page.getCanvas().isHardwareAccelerated();
             int height = mOriginalBitmapLenght;
             int width = mOriginalBitmapWidth;
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = COLOR_CONFIG;
-            options.inDither = false;
-            options.inPreferQualityOverSpeed = false;
-            //sample size
-            options.inSampleSize = SUBSAMPLING_VALUE;
+            BitmapFactory.Options options = setBitmapOptions();
             Log.d(LOG_TAG,"Page: " + width + "x" + height + ". Density: " + page.getCanvas().getDensity());
             Bitmap tile;
-            // loop block
-            Paint paint = new Paint();
-            paint.setColor(Color.RED);
-            paint.setStyle(Paint.Style.STROKE);
 
-            for (int i=0; i<height; i+=block) {
+            // loop block:
+            for (int i=0; i<height; i+=TILE_SIZE) {
                 // get vertical bounds limited by image height
                 tileBounds.top = i;
-                int h = i+block<height ? block : height-i;
+                int h = i+TILE_SIZE<height ? TILE_SIZE : height-i;
                 tileBounds.bottom = i+h;
-                for (int j=0; j<width; j+=block) {
+                for (int j=0; j<width; j+=TILE_SIZE) {
                     // get hotizontal bounds limited by image width
                     tileBounds.left = j;
-                    int w = j+block<width ? block : width-j;
+                    int w = j+TILE_SIZE<width ? TILE_SIZE : width-j;
                     tileBounds.right = j + w;
                     // load tile
                     tile = decoder.decodeRegion(tileBounds, options);
-                    page.getCanvas().drawBitmap(tile,new Rect(0,0,block/options.inSampleSize,block/options.inSampleSize),new Rect(tileBounds.left,tileBounds.top,tileBounds.right,tileBounds.bottom),null);
+                    page.getCanvas().drawBitmap(tile,
+                                                new Rect(0, 0, TILE_SIZE/options.inSampleSize, TILE_SIZE/options.inSampleSize),
+                                                new Rect(tileBounds.left, tileBounds.top, tileBounds.right, tileBounds.bottom),
+                                                null);
                     
                     Log.d(LOG_TAG,"Drawing tile on " + i + "x" + j + ". Bitmap: " + tile.getWidth() + "x" + tile.getHeight());
                     tile.recycle();
@@ -640,6 +630,15 @@ public class RollHelper implements RollHelperConstants {
         catch (Exception ex){
             ex.printStackTrace();
         }
+    }
+
+    private BitmapFactory.Options setBitmapOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = COLOR_CONFIG;
+        options.inDither = IN_DITHER;
+        options.inPreferQualityOverSpeed = QUALITY_OVER_SPEED;
+        options.inSampleSize = SUBSAMPLING_VALUE;
+        return options;
     }
 
     /**
@@ -662,7 +661,7 @@ public class RollHelper implements RollHelperConstants {
         int w = opt.outWidth;
         int h = opt.outHeight;
         mOriginalBitmapWidth = opt.outWidth;
-        mOriginalBitmapLenght= opt.outHeight;
+        mOriginalBitmapLenght = opt.outHeight;
         // If bitmap cannot be decoded, return null
         if (w <= 0 || h <= 0) {
             return null;
