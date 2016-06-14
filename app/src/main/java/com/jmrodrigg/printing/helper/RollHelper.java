@@ -340,6 +340,7 @@ public class RollHelper implements RollHelperConstants {
                 mAttributes = newPrintAttributes;
 
                 if (cancellationSignal.isCanceled()) {
+                    Log.i(LOG_TAG, "onLayout() - Cancelled.");
                     layoutResultCallback.onLayoutCancelled();
                     return;
                 }
@@ -350,6 +351,7 @@ public class RollHelper implements RollHelperConstants {
                             .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
                             .build();
                     boolean changed = !newPrintAttributes.equals(oldPrintAttributes);
+                    Log.d(LOG_TAG, "onLayout() - Finished.");
                     layoutResultCallback.onLayoutFinished(info, changed);
                     return;
                 }
@@ -390,9 +392,11 @@ public class RollHelper implements RollHelperConstants {
                                     .build();
                             boolean changed = !newPrintAttributes.equals(oldPrintAttributes);
 
+                            Log.d(LOG_TAG, "onLayout() - Finished.");
                             layoutResultCallback.onLayoutFinished(info, changed);
 
                         } else {
+                            Log.e(LOG_TAG, "onLayout() - Finished with errors.");
                             layoutResultCallback.onLayoutFailed(null);
                         }
                         mLoadBitmap = null;
@@ -401,12 +405,11 @@ public class RollHelper implements RollHelperConstants {
                     @Override
                     protected void onCancelled(Bitmap result) {
                         // Task was cancelled, report that.
+                        Log.i(LOG_TAG, "onLayout() - Cancelled.");
                         layoutResultCallback.onLayoutCancelled();
                         mLoadBitmap = null;
                     }
                 }.execute();
-
-                Log.d(LOG_TAG, "onLayout() - Finished.");
             }
 
             private void cancelLoad() {
@@ -475,7 +478,7 @@ public class RollHelper implements RollHelperConstants {
                             .setResolution(mAttributes.getResolution())
                             .setMinMargins(mAttributes.getMinMargins())
                             .build();
-                    Log.e(LOG_TAG, "PDF created: Size "+ width +" x "+pageHeight);
+                    Log.d(LOG_TAG, "PDF created: Size "+ width +" x "+pageHeight);
 
                     pdfDocument = new PrintedPdfDocument(mContext,mAttributes);
                 } else {
@@ -517,11 +520,10 @@ public class RollHelper implements RollHelperConstants {
                     Page page = pdfDocument.startPage(1);
 
                     RectF content = new RectF(page.getInfo().getContentRect());
-                    Log.d(LOG_TAG,"Content Rect: " + content.toString() + "," + content.width() + " x " + content.height());
+                    Log.d(LOG_TAG,"Content Rect: " + content.toString() + ". Width: " + content.width() + ". Height: " + content.height());
                     if(!mIsPreview && mOriginalBitmapLenght > mBitmap.getHeight() && mOriginalBitmapWidth > mBitmap.getWidth()){
                         //generate a pdf with tiles
                         GeneratePDF(imageFile,page);
-
                     }
                     else {
                         // Compute and apply scale to fill the page.
@@ -540,7 +542,7 @@ public class RollHelper implements RollHelperConstants {
 
                         pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
 
-                        if (false) {
+                        if (true) {
                             // Save a copy in the External storage for debugging purposes:
                             long date = Calendar.getInstance().getTime().getTime();
                             pdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf"));
