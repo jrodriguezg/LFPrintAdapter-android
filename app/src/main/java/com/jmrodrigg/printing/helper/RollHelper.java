@@ -47,6 +47,15 @@ public class RollHelper implements RollHelperConstants {
     private int mOriginalBitmapLenght;
 
     /**
+     * image will be scaled but leave white space
+     */
+    public static final int SCALE_MODE_FIT = 1;
+    /**
+     * image will fill the paper and be cropped (default)
+     */
+    public static final int SCALE_MODE_FILL = 2;
+
+    /**
      * select landscape (default)
      */
     public static final int ORIENTATION_LANDSCAPE = 1;
@@ -69,6 +78,8 @@ public class RollHelper implements RollHelperConstants {
         void onFinish();
     }
 
+    int mScaleMode = SCALE_MODE_FILL;
+
     int mColorMode = COLOR_MODE_COLOR;
 
     int mOrientation = ORIENTATION_LANDSCAPE;
@@ -77,6 +88,20 @@ public class RollHelper implements RollHelperConstants {
 
     public RollHelper(Context context) {
         mContext = context;
+    }
+
+    /**
+     * Selects whether the image will fill the paper and be cropped
+     * <p/>
+     * {@link #SCALE_MODE_FIT}
+     * or whether the image will be scaled but leave white space
+     * {@link #SCALE_MODE_FILL}.
+     *
+     * @param scaleMode {@link #SCALE_MODE_FIT} or
+     *                  {@link #SCALE_MODE_FILL}
+     */
+    public void setScaleMode(int scaleMode) {
+        mScaleMode = scaleMode;
     }
 
     /**
@@ -133,7 +158,7 @@ public class RollHelper implements RollHelperConstants {
      * @param content a {@link Rect} that defines the output page dimensions.
      * @return {@link Matrix} to be used to transform the @{Bitmap} that will be drawn.
      */
-    private Matrix getMatrix(int imageWidth, RectF content) {
+    private Matrix getRollMatrix(int imageWidth, RectF content) {
         Matrix matrix = new Matrix();
         float scale;
         if (content.width() > content.height()) {
@@ -149,6 +174,38 @@ public class RollHelper implements RollHelperConstants {
             matrix.postTranslate(content.width(),0f);
         }
 
+        return matrix;
+    }
+
+    /**
+     * Calculates the transform {@link Matrix} to print an image. It will always fit to roll width
+     * according to the selected orientation.
+     *
+     * @param imageWidth width of the image that will be printed.
+     * @param content a {@link Rect} that defines the output page dimensions.
+     * @param fittingMode The mode of fitting {@link #SCALE_MODE_FILL} vs {@link #SCALE_MODE_FIT}
+     * @return {@link Matrix} to be used to transform the @{Bitmap} that will be drawn.
+     */
+    private Matrix getMatrix(int imageWidth, int imageHeight, RectF content, int fittingMode) {
+        Matrix matrix = new Matrix();
+
+        // Compute and apply scale to fill the page.
+        float scale = content.width() / imageWidth;
+        if (fittingMode == SCALE_MODE_FILL) {
+            scale = Math.max(scale, content.height() / imageHeight);
+        } else {
+            scale = Math.min(scale, content.height() / imageHeight);
+        }
+
+        matrix.postScale(scale, scale);
+
+        // Center the content.
+        final float translateX = (content.width()
+                - imageWidth * scale) / 2;
+        final float translateY = (content.height()
+                - imageHeight * scale) / 2;
+
+        matrix.postTranslate(translateX,translateY);
         return matrix;
     }
 
@@ -175,6 +232,8 @@ public class RollHelper implements RollHelperConstants {
      */
     public void printBitmap(final String jobName, final Uri imageFile,
                             final OnPrintFinishCallback callback) throws FileNotFoundException {
+        final int fittingMode = mScaleMode;
+
         PrintDocumentAdapter printDocumentAdapter = new PrintDocumentAdapter() {
             private PrintAttributes mAttributes;
             AsyncTask<Uri, Boolean, Bitmap> mLoadBitmap;
@@ -332,62 +391,30 @@ public class RollHelper implements RollHelperConstants {
                             .setResolution(mAttributes.getResolution())
                             .setMinMargins(mAttributes.getMinMargins())
                             .build();
-                    Log.d(LOG_TAG, "PDF created: Size "+ width +" x "+pageHeight);
+                    Log.d(LOG_TAG, "PDF created: Size " + width + " x " + pageHeight);
 
-                    pdfDocument = new PrintedPdfDocument(mContext,mAttributes);
+                    pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
                 } else {
-                    //workaround to simnulate roll in paper
-                    PrintAttributes.MediaSize oldMediaSize = mAttributes.getMediaSize();
-                    int width = 36000;
-
-                    int pageHeight;
-                    float aspectRatio;
-
-                    if(oldMediaSize.isPortrait()){
-                        Log.d(LOG_TAG, "Portrait mode.");
-                        aspectRatio = (float) mBitmap.getWidth() / (float) mBitmap.getHeight();
-                        pageHeight = Math.round((float)width/aspectRatio);
-                    }
-                    else{
-                        Log.d(LOG_TAG, "Landscape mode.");
-                        aspectRatio =  (float) mBitmap.getHeight()/(float) mBitmap.getWidth();
-                        pageHeight = Math.round((float)width/aspectRatio);
-                    }
-
-                    PrintAttributes.MediaSize newMediaSize = new PrintAttributes.MediaSize(oldMediaSize.getId(),
-                            "Test paper",
-                            width,
-                            pageHeight);
-                    mAttributes = new PrintAttributes.Builder()
-                            .setMediaSize(newMediaSize)
-                            .setResolution(mAttributes.getResolution())
-                            .setMinMargins(mAttributes.getMinMargins())
-                            .build();
-                    Log.e(LOG_TAG, "PDF created - Size: " + width + " x " + pageHeight);
-                    pdfDocument = new PrintedPdfDocument(mContext,
-                            mAttributes);
+                    Log.d(LOG_TAG, "PDF created - Size: " + mAttributes.getMediaSize().getWidthMils() + " x " + mAttributes.getMediaSize().getHeightMils());
+                    pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
                 }
                 Bitmap maybeGrayscale = convertBitmapForColorMode(mBitmap, mAttributes.getColorMode());
 
                 try {
-
                     Page page = pdfDocument.startPage(1);
 
                     RectF content = new RectF(page.getInfo().getContentRect());
                     Log.d(LOG_TAG,"Content Rect: " + content.toString() + ". Width: " + content.width() + ". Height: " + content.height());
-                    if(!mIsPreview && mOriginalBitmapLenght > mBitmap.getHeight() && mOriginalBitmapWidth > mBitmap.getWidth()){
+                    if (!mIsPreview && mOriginalBitmapLenght > mBitmap.getHeight() && mOriginalBitmapWidth > mBitmap.getWidth()) {
                         //generate a pdf with tiles
-                        GeneratePDF(imageFile,page);
-                    }
-                    else {
+                        GeneratePDF(imageFile, page, isRoll(mAttributes.getMediaSize()), fittingMode);
+                    } else {
                         // Compute and apply scale to fill the page.
-                        Matrix matrix = getMatrix(mBitmap.getWidth(), content);
-
+                        Matrix matrix = (isRoll(mAttributes.getMediaSize())) ? getRollMatrix(mBitmap.getWidth(), content) : getMatrix(mBitmap.getWidth(), mBitmap.getHeight(), content, fittingMode);
                         // Draw the bitmap.
                         page.getCanvas().drawBitmap(maybeGrayscale, matrix, null);
                     }
                     // Finish the page.
-
                     pdfDocument.finishPage(page);
 
                     try {
@@ -449,7 +476,7 @@ public class RollHelper implements RollHelperConstants {
      * @param uri Location of a valid image.
      * @param page The Page where the given file will be drawn.
      */
-    private void GeneratePDF(Uri uri, Page page){
+    private void GeneratePDF(Uri uri, Page page, boolean isRoll, int fittingMode){
         InputStream is;
         try {
             is = mContext.getContentResolver().openInputStream(uri);
@@ -458,7 +485,7 @@ public class RollHelper implements RollHelperConstants {
             Rect tileBounds = new Rect();
             RectF contentRect = new RectF(page.getInfo().getContentRect());
             //set matrix for rotation and/or scale
-            Matrix m = getMatrix(mOriginalBitmapWidth, contentRect);
+            Matrix m = (isRoll) ? getRollMatrix(mOriginalBitmapWidth, contentRect) : getMatrix(mOriginalBitmapWidth, mOriginalBitmapLenght, contentRect, fittingMode);
             page.getCanvas().setMatrix(m);
 
             int height = mOriginalBitmapLenght;
