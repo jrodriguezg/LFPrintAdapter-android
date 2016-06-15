@@ -34,7 +34,7 @@ import java.util.List;
  * Author: jrodriguezg
  * Date: 12/04/2015.
  */
-public class PrintAdapter extends PrintDocumentAdapter {
+public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
     private static final int MILS_PER_INCH = 1000;
 
@@ -213,12 +213,14 @@ public class PrintAdapter extends PrintDocumentAdapter {
                 mDocument.writeTo(new FileOutputStream(
                         destination.getFileDescriptor()));
 
-                // Save a copy in the External storage for debugging purposes:
-                long date = Calendar.getInstance().getTime().getTime();
-                mDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName));
-                Log.d(PrintingConstants.LOG_TAG,"A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
+                if (DUMP_FILE) {
+                    // Save a copy in the External storage for debugging purposes:
+                    long date = Calendar.getInstance().getTime().getTime();
+                    mDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName));
+                    Log.d(PrintingConstants.LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
+                }
             }
-        }catch(IOException ex) {
+        } catch (IOException ex) {
             mDocument.close();
             mDocument = null;
         }
@@ -227,7 +229,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
         callback.onWriteFinished(writtenPageRange);
     }
 
-    private void printPdfAsIs(ParcelFileDescriptor destination) throws IOException{
+    private void printPdfAsIs(ParcelFileDescriptor destination) throws IOException {
         File f = new File(mPdfFile);
         InputStream in = new FileInputStream(f);
         OutputStream out = new FileOutputStream(destination.getFileDescriptor());
@@ -238,7 +240,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
         out.close();
     }
 
-    private void copyFile(InputStream in, OutputStream out) throws IOException{
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
         while((read = in.read(buffer)) != -1) {

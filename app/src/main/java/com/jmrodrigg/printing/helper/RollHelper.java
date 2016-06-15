@@ -26,6 +26,8 @@ import android.print.pdf.PrintedPdfDocument;
 import android.util.Log;
 import android.graphics.pdf.PdfDocument.Page;
 
+import com.jmrodrigg.printing.RollHelperConstants;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -422,7 +424,7 @@ public class RollHelper implements RollHelperConstants {
 
                         pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
 
-                        if (true) {
+                        if (DUMP_FILE) {
                             // Save a copy in the External storage for debugging purposes:
                             long date = Calendar.getInstance().getTime().getTime();
                             pdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf"));
@@ -477,6 +479,9 @@ public class RollHelper implements RollHelperConstants {
      * @param page The Page where the given file will be drawn.
      */
     private void GeneratePDF(Uri uri, Page page, boolean isRoll, int fittingMode){
+
+        Log.d(LOG_TAG,"GeneratePDF - Generating PDF file using tiling strategy.");
+
         InputStream is;
         try {
             is = mContext.getContentResolver().openInputStream(uri);
@@ -512,12 +517,16 @@ public class RollHelper implements RollHelperConstants {
                                                 new Rect(tileBounds.left, tileBounds.top, tileBounds.right, tileBounds.bottom),
                                                 null);
                     
-                    Log.d(LOG_TAG,"Drawing tile on " + i + "x" + j + ". Bitmap: " + tile.getWidth() + "x" + tile.getHeight());
+//                    Log.d(LOG_TAG,"Drawing tile on " + i + "x" + j + ". Bitmap: " + tile.getWidth() + "x" + tile.getHeight());
                     tile.recycle();
                 }
             }
+
+        Log.d(LOG_TAG,"GeneratePDF - Generating PDF file using tiling strategy.");
+
         }
         catch (Exception ex){
+            Log.e(LOG_TAG,"GeneratePDF - An exception occured while generating tiles.");
             ex.printStackTrace();
         }
     }

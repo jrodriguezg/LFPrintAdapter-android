@@ -1,12 +1,12 @@
-package com.jmrodrigg.printing.helper;
+package com.jmrodrigg.printing;
 
 import android.graphics.Bitmap;
 
 /**
  * Author: jrodriguezg
- * Date: 13/06/2016.
+ * Date: 15/06/2016.
  */
-public interface RollHelperConstants {
+public interface RollHelperConstants extends Constants {
     Bitmap.Config COLOR_CONFIG  = Bitmap.Config.RGB_565;
     int SUBSAMPLING_VALUE       = 2;
     boolean IN_DITHER           = false;
