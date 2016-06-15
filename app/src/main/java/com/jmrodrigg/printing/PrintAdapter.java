@@ -35,6 +35,7 @@ import java.util.List;
  * Date: 12/04/2015.
  */
 public class PrintAdapter extends PrintDocumentAdapter implements Constants {
+    private static final String LOG_TAG = "PrintAdapter";
 
     private static final int MILS_PER_INCH = 1000;
 
@@ -70,6 +71,9 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
     @Override
     public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras) {
+
+        Log.d(LOG_TAG, "onLayout() - Init.");
+
         mDocument = new PrintedPdfDocument(mParentActivity,newAttributes);
         currentAttributes = newAttributes;
 
@@ -101,6 +105,7 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
         }
 
         if (!shouldLayout) {
+            Log.d(LOG_TAG, "onLayout() - Finished. No Re-Layout required.");
             callback.onLayoutFinished(mPrintDocumentInfo,false);
             return;
         }
@@ -114,8 +119,10 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                                         .setPageCount(pages)
                                         .build();
 
+            Log.d(LOG_TAG, "onLayout() - Finished. Will Re-Layout.");
             callback.onLayoutFinished(mPrintDocumentInfo,true);
         } else {
+            Log.e(LOG_TAG, "onLayout() - Failed. Page count not valid.");
             callback.onLayoutFailed("Page count calculation failed.");
         }
     }
@@ -129,16 +136,22 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
     @Override
     public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
 
+        Log.d(LOG_TAG, "onWrite() - Init.");
+
         SparseIntArray writtenPages = new SparseIntArray();
 
         try {
             if (print_mode == PrintingConstants.FitMode.PASS_PDF_AS_IS) {
+                Log.d(LOG_TAG, "Passing original PDF as is.");
+
                 printPdfAsIs(destination);
 
                 for (int i = 0; i < mTotalPages; i++) {
                     writtenPages.append(writtenPages.size(), i);
                 }
             } else {
+                Log.d(LOG_TAG, "Painting content into canvas.");
+
                 int margin_left = (int) (72 * (float) currentAttributes.getMinMargins().getLeftMils() / MILS_PER_INCH);
                 int margin_right = (int) (72 * (float) currentAttributes.getMinMargins().getRightMils() / MILS_PER_INCH);
                 int margin_top = (int) (72 * (float) currentAttributes.getMinMargins().getTopMils() / MILS_PER_INCH);
@@ -165,6 +178,7 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
                         switch (print_mode) {
                             case PRINT_CLIP_CONTENT:
+                                Log.d(LOG_TAG, "Original size (Clip Contents by Margins).");
                                 m.setScale(1.0f,1.0f);
                                 // Center the bitmap on page while correct the margin offset:
                                 translateX = Math.abs(dimensions[0]-pageWidth);
@@ -175,6 +189,10 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                             case PRINT_FIT_TO_PAGE:
                             case PRINT_FILL_PAGE:
                             default:
+                                if (print_mode.equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE)) Log.d(LOG_TAG, "Fit to Page.");
+                                else if (print_mode.equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) Log.d(LOG_TAG, "Fill Page.");
+                                else Log.d(LOG_TAG, "Original scale.");
+
                                 scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
                                 if ((print_mode.equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE) && (scale < 1))
                                     || (print_mode.equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)))
@@ -210,17 +228,22 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                         // --> END Print page 0.
                     }
                 }
-                mDocument.writeTo(new FileOutputStream(
-                        destination.getFileDescriptor()));
+
+                Log.d(LOG_TAG, "Writing print Job to file descriptor.");
+
+                mDocument.writeTo(new FileOutputStream(destination.getFileDescriptor()));
 
                 if (DUMP_FILE) {
                     // Save a copy in the External storage for debugging purposes:
                     long date = Calendar.getInstance().getTime().getTime();
                     mDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName));
-                    Log.d(PrintingConstants.LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
+                    Log.d(LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
                 }
             }
+
+            Log.d(LOG_TAG, "onWrite() - Finished.");
         } catch (IOException ex) {
+            Log.e(LOG_TAG, "onWrite() - Finished with errors: Error writing printed content.", ex);
             mDocument.close();
             mDocument = null;
         }

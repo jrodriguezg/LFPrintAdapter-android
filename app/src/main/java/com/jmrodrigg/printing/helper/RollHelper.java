@@ -397,6 +397,7 @@ public class RollHelper implements RollHelperConstants {
 
                     pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
                 } else {
+                    Log.d(LOG_TAG, "Printing file on standard media size.");
                     Log.d(LOG_TAG, "PDF created - Size: " + mAttributes.getMediaSize().getWidthMils() + " x " + mAttributes.getMediaSize().getHeightMils());
                     pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
                 }
@@ -420,7 +421,7 @@ public class RollHelper implements RollHelperConstants {
                     pdfDocument.finishPage(page);
 
                     try {
-                        Log.d(LOG_TAG,"Writing print Job to file descriptor.");
+                        Log.d(LOG_TAG, "Writing print Job to file descriptor.");
 
                         pdfDocument.writeTo(new FileOutputStream(fileDescriptor.getFileDescriptor()));
 
@@ -452,7 +453,7 @@ public class RollHelper implements RollHelperConstants {
                         maybeGrayscale.recycle();
                     }
 
-                    Log.d(LOG_TAG,"onWrite() - Finished.");
+                    Log.d(LOG_TAG, "onWrite() - Finished.");
                 }
             }
         };
