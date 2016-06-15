@@ -9,12 +9,6 @@ public class PrintingConstants {
     // Bundle parameters:
     public static final String PRINT_JOB_CLASS = "print-job-class";
 
-    // Margins:
-    public static final int LEFT_MARGIN    = 0;
-    public static final int TOP_MARGIN     = 1;
-    public static final int RIGHT_MARGIN   = 2;
-    public static final int BOTTOM_MARGIN  = 3;
-
     // Permissions requests:
     public static final int PERMISSION_EXT_STORAGE_READ = 1;
 
