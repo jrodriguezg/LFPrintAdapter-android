@@ -241,15 +241,25 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                 }
             }
 
-            Log.d(LOG_TAG, "onWrite() - Finished.");
+            PageRange[] writtenPageRange = computeWrittenPageRanges(writtenPages);
+            callback.onWriteFinished(writtenPageRange);
         } catch (IOException ex) {
             Log.e(LOG_TAG, "onWrite() - Finished with errors: Error writing printed content.", ex);
+            callback.onWriteFailed(null);
+        } finally {
             mDocument.close();
             mDocument = null;
-        }
 
-        PageRange[] writtenPageRange = computeWrittenPageRanges(writtenPages);
-        callback.onWriteFinished(writtenPageRange);
+            if (destination != null) {
+                try {
+                    destination.close();
+                } catch (IOException ex) {
+                    /* ignore */
+                }
+            }
+
+            Log.d(LOG_TAG, "onWrite() - Finished.");
+        }
     }
 
     private void printPdfAsIs(ParcelFileDescriptor destination) throws IOException {
