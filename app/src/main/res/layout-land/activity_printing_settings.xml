@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/lblPrintMode"
         android:id="@+id/radioPrintMode"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <RadioButton
             android:layout_width="wrap_content"
@@ -27,8 +27,7 @@
             android:text="@string/radio_button_print_mode_fit"
             android:id="@+id/radioFit"
             android:onClick="onPrintModeClicked"
-            android:checked="false"
-            android:gravity="center" />
+            android:checked="false" />
 
         <RadioButton
             android:layout_width="wrap_content"
@@ -55,6 +54,7 @@
             android:checked="false" />
 
     </RadioGroup>
+
 
     <Button
         android:layout_width="wrap_content"

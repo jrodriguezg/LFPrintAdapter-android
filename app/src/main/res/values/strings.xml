@@ -23,7 +23,6 @@
     <string name="radio_button_print_mode_fill">Fill Page</string>
     <string name="radio_button_print_mode_clip">Clip Content</string>
     <string name="radio_button_print_mode_as_is">Print as is</string>
-    <string name="label_margins_mode">Margins</string>
     <string name="radio_button_no_margins">No Margins</string>
     <string name="radio_button_printer_margins">Printer Margins</string>
 
