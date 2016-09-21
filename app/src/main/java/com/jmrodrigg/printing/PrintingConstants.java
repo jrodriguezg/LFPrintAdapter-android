@@ -17,7 +17,6 @@ public class PrintingConstants {
 
     // Printing settings:
     public enum FitMode { PRINT_FIT_TO_PAGE, PRINT_FILL_PAGE, PRINT_CLIP_CONTENT, PASS_PDF_AS_IS }
-    public enum MarginsMode { NO_MARGINS, PRINTER_MARGINS }
     public enum JobType { DOCUMENT, IMAGE }
 
     public static final String LOG_TAG = "PrintSample";

@@ -51,7 +51,6 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
     int mTotalPages;
     PrintingConstants.FitMode print_mode;
-    PrintingConstants.MarginsMode margins_mode;
 
     private PrintedPdfDocument mDocument;
 
@@ -66,7 +65,6 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
         mPdfFileName = printJob.getFilename();
 
         print_mode = printJob.getFitMode();
-        margins_mode = printJob.getMarginsMode();
     }
 
     @Override

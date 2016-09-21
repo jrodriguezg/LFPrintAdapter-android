@@ -43,15 +43,11 @@ public class PrintingSettingsActivity extends Activity {
 
     private void initComponents() {
         RadioButton rBtnPMFill, rBtnPMFit, rBtnPMClip, rBtnPMAsIs;
-        RadioButton rBtnNoMargins, rBtnPrinterMargins;
 
         rBtnPMFit = (RadioButton) findViewById(R.id.radioFit);
         rBtnPMFill = (RadioButton) findViewById(R.id.radioFill);
         rBtnPMClip = (RadioButton) findViewById(R.id.radioClip);
         rBtnPMAsIs = (RadioButton) findViewById(R.id.radioAsIs);
-
-        rBtnNoMargins = (RadioButton) findViewById(R.id.radioNoMargins);
-        rBtnPrinterMargins = (RadioButton) findViewById(R.id.radioPrinterMargins);
 
         if(mPrintJob.getMimeType() == PrintingConstants.JobType.IMAGE) {
             rBtnPMAsIs.setVisibility(View.GONE);
@@ -73,14 +69,6 @@ public class PrintingSettingsActivity extends Activity {
                 break;
         }
 
-        switch (mPrintJob.getMarginsMode()) {
-            case NO_MARGINS:
-                rBtnNoMargins.setChecked(true);
-                break;
-            case PRINTER_MARGINS:
-                rBtnPrinterMargins.setChecked(true);
-                break;
-        }
     }
 
     @Override
@@ -113,19 +101,6 @@ public class PrintingSettingsActivity extends Activity {
                 if(checked) mPrintJob.setFitMode(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
                 break;
 
-        }
-    }
-
-    public void onMarginsModeClicked(View v) {
-        boolean checked = ((RadioButton) v).isChecked();
-
-        switch(v.getId()) {
-            case R.id.radioNoMargins:
-                if(checked) mPrintJob.setMarginsMode(PrintingConstants.MarginsMode.NO_MARGINS);
-                break;
-            case R.id.radioPrinterMargins:
-                if(checked) mPrintJob.setMarginsMode(PrintingConstants.MarginsMode.PRINTER_MARGINS);
-                break;
         }
     }
 

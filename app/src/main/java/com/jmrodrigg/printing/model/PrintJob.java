@@ -15,12 +15,10 @@ public class PrintJob implements Parcelable {
     private String mUri;
     private String mFilename;
     private PrintingConstants.FitMode mFitMode;
-    private PrintingConstants.MarginsMode mMarginsMode;
     private PrintingConstants.JobType mMimeType;
 
     public PrintJob() {
         mFitMode = PrintingConstants.FitMode.PRINT_FIT_TO_PAGE;
-        mMarginsMode = PrintingConstants.MarginsMode.PRINTER_MARGINS;
         mMimeType = PrintingConstants.JobType.DOCUMENT;
     }
 
@@ -29,7 +27,6 @@ public class PrintJob implements Parcelable {
         mFilename = in.readString();
         mMimeType = (PrintingConstants.JobType) in.readSerializable();
         mFitMode = (PrintingConstants.FitMode) in.readSerializable();
-        mMarginsMode = (PrintingConstants.MarginsMode) in.readSerializable();
     }
 
     /* Parcelable implementation */
@@ -56,7 +53,6 @@ public class PrintJob implements Parcelable {
         dest.writeString(mFilename);
         dest.writeSerializable(mMimeType);
         dest.writeSerializable(mFitMode);
-        dest.writeSerializable(mMarginsMode);
     }
 
     /* Parcelable implementation - END */
@@ -89,16 +85,8 @@ public class PrintJob implements Parcelable {
         mFitMode = fitMode;
     }
 
-    public void setMarginsMode(PrintingConstants.MarginsMode margins) {
-        mMarginsMode = margins;
-    }
-
     public PrintingConstants.FitMode getFitMode() {
         return mFitMode;
-    }
-
-    public PrintingConstants.MarginsMode getMarginsMode() {
-        return mMarginsMode;
     }
 
     public boolean isValid() {
@@ -112,8 +100,6 @@ public class PrintJob implements Parcelable {
             switch (getMimeType()) {
                 case DOCUMENT:
                     if (!getFilename().toUpperCase().endsWith(".PDF"))
-                        return false;
-                    if(getMarginsMode().equals(PrintingConstants.MarginsMode.NO_MARGINS))
                         return false;
                     break;
 
