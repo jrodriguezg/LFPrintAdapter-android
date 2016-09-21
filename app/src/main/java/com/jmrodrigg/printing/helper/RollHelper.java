@@ -26,8 +26,6 @@ import android.print.pdf.PrintedPdfDocument;
 import android.util.Log;
 import android.graphics.pdf.PdfDocument.Page;
 
-import com.jmrodrigg.printing.RollHelperConstants;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
