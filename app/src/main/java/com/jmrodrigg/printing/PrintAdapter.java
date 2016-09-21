@@ -157,6 +157,8 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                 int margin_top = (int) (72 * (float) currentAttributes.getMinMargins().getTopMils() / MILS_PER_INCH);
                 int margin_bottom = (int) (72 * (float) currentAttributes.getMinMargins().getBottomMils() / MILS_PER_INCH);
 
+                Log.d(LOG_TAG, "Margins in PrintAttributes: [" + margin_left + "," + margin_top + "," + margin_right + "," + margin_bottom + "]");
+
                 int pageWidth = (int) (72 * (float) currentAttributes.getMediaSize().getWidthMils() / MILS_PER_INCH);
                 int pageHeight = (int) (72 * (float) currentAttributes.getMediaSize().getHeightMils() / MILS_PER_INCH);
 
