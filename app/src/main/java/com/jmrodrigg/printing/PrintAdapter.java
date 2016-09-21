@@ -5,7 +5,13 @@ import com.jmrodrigg.printing.model.PrintJob;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
@@ -170,9 +176,9 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                         // --> START Print page i;
                         int[] dimensions = mRenderer.openPage(i);
 //                        PdfDocument.Page page = mDocument.startPage(i);
-                        PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(printable_width, printable_height, i).create();
+                        PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i).create();
                         PdfDocument.Page page = mDocument.startPage(pInfo);
-                        Bitmap bmp = Bitmap.createBitmap(printable_width, printable_height, Bitmap.Config.ARGB_8888);
+                        Bitmap bmp = Bitmap.createBitmap(pageWidth, pageHeight, Bitmap.Config.ARGB_8888);
                         Matrix m = new Matrix();
                         float scale;
 
@@ -183,7 +189,7 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                                 // Center the bitmap on page while correct the margin offset:
                                 translateX = Math.abs(dimensions[0]-pageWidth);
                                 translateY = Math.abs(dimensions[1]-pageHeight);
-                                m.setTranslate(translateX/2 -margin_left ,translateY/2 -margin_top);
+                                m.setTranslate(translateX/2,translateY/2);
                                 break;
 
                             case PRINT_FIT_TO_PAGE:
@@ -222,6 +228,21 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
                         Canvas c = page.getCanvas();
                         c.drawBitmap(bmp, 0, 0, null);
+
+                            Paint clear = new Paint();
+//                            clear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+                            clear.setColor(Color.YELLOW);
+                            clear.setAlpha(60);
+                            //Margin Top:
+                            c.drawRect(new Rect(0,0,pageWidth,margin_top),clear);
+                            //Margin Bottom:
+                            c.drawRect(new Rect(0,pageHeight-margin_bottom,pageWidth,pageHeight),clear);
+
+                            //Margin Left:
+                            c.drawRect(new Rect(0,margin_top,margin_left,pageHeight-margin_bottom),clear);
+                            //Margin Right:
+                            c.drawRect(new Rect(pageWidth-margin_right,margin_top,pageWidth,pageHeight-margin_bottom),clear);
+
                         mDocument.finishPage(page);
 
                         writtenPages.append(writtenPages.size(), i);
