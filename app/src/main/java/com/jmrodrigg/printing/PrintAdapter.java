@@ -175,9 +175,9 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                     if (containsPage(pageRanges, i)) {
                         // --> START Print page i;
                         int[] dimensions = mRenderer.openPage(i);
-//                        PdfDocument.Page page = mDocument.startPage(i);
-                        PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i).create();
-                        PdfDocument.Page page = mDocument.startPage(pInfo);
+                        PdfDocument.Page page = mDocument.startPage(i);
+//                        PdfDocument.PageInfo pInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i).create();
+//                        PdfDocument.Page page = mDocument.startPage(pInfo);
                         Bitmap bmp = Bitmap.createBitmap(pageWidth, pageHeight, Bitmap.Config.ARGB_8888);
                         Matrix m = new Matrix();
                         float scale;
@@ -187,9 +187,9 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                                 Log.d(LOG_TAG, "Original size (Clip Contents by Margins).");
                                 m.setScale(1.0f,1.0f);
                                 // Center the bitmap on page while correct the margin offset:
-                                translateX = Math.abs(dimensions[0]-pageWidth);
-                                translateY = Math.abs(dimensions[1]-pageHeight);
-                                m.setTranslate(translateX/2,translateY/2);
+                                translateX = Math.abs(dimensions[0] - pageWidth);
+                                translateY = Math.abs(dimensions[1] - pageHeight);
+                                m.setTranslate(translateX/2 - ((margin_left + margin_right) / 2),translateY/2 - ((margin_top + margin_bottom) / 2));
                                 break;
 
                             case PRINT_FIT_TO_PAGE:
@@ -199,24 +199,32 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
                                 else if (print_mode.equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) Log.d(LOG_TAG, "Fill Page.");
                                 else Log.d(LOG_TAG, "Original scale.");
 
-                                scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
+                                if (dimensions[0] > dimensions[1]) scale = Math.min((float) printable_width/dimensions[1], (float) printable_height/dimensions[0]);
+                                else scale = Math.min((float) printable_width/dimensions[0], (float) printable_height/dimensions[1]);
+
                                 if ((print_mode.equals(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE) && (scale < 1))
                                     || (print_mode.equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)))
                                     m.setScale(scale, scale);
                                 else
                                     scale = 1;
 
-                                translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
-                                translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
+//                                translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
+//                                translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
 
                                 // Rotate and translate if landscape:
                                 if(dimensions[0] > dimensions[1]) {
+                                    translateX = Math.abs((int)(dimensions[1] * scale) - printable_width);
+                                    translateY = Math.abs((int)(dimensions[0] * scale) - printable_height);
+
                                     m.preRotate(90);
                                     m.postTranslate(dimensions[1] * scale,translateY/2);
-                                    if(pageWidth > pageHeight)
+//                                    if(pageWidth > pageHeight)
                                         m.postTranslate(translateX/2,0);
                                 } else {
                                     // Translate to center the content:
+                                    translateX = Math.abs((int)(dimensions[0] * scale) - printable_width);
+                                    translateY = Math.abs((int)(dimensions[1] * scale) - printable_height);
+
                                     m.postTranslate(translateX/2, translateY/2);
                                 }
 
@@ -228,20 +236,6 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
                         Canvas c = page.getCanvas();
                         c.drawBitmap(bmp, 0, 0, null);
-
-                            Paint clear = new Paint();
-//                            clear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-                            clear.setColor(Color.YELLOW);
-                            clear.setAlpha(60);
-                            //Margin Top:
-                            c.drawRect(new Rect(0,0,pageWidth,margin_top),clear);
-                            //Margin Bottom:
-                            c.drawRect(new Rect(0,pageHeight-margin_bottom,pageWidth,pageHeight),clear);
-
-                            //Margin Left:
-                            c.drawRect(new Rect(0,margin_top,margin_left,pageHeight-margin_bottom),clear);
-                            //Margin Right:
-                            c.drawRect(new Rect(pageWidth-margin_right,margin_top,pageWidth,pageHeight-margin_bottom),clear);
 
                         mDocument.finishPage(page);
 
