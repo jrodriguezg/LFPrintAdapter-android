@@ -1,8 +1,6 @@
-package com.jmrodrigg.printing.helper;
+package com.hp.lfprintadapter.model;
 
 import android.graphics.Bitmap;
-
-import com.jmrodrigg.printing.Constants;
 
 /**
  * Author: jrodriguezg

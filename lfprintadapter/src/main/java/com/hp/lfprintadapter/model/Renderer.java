@@ -1,4 +1,4 @@
-package com.jmrodrigg.printing;
+package com.hp.lfprintadapter.model;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;

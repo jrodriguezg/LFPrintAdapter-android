@@ -1,13 +1,15 @@
-package com.jmrodrigg.printing;
+package com.hp.lfprintadapter;
 
-import com.jmrodrigg.printing.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintingConstants;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -31,14 +33,12 @@ public class PrintJobTest {
         *  Filename: .pdf
         *  FitMode: PDF_AS_IS
         *  JobType: DOCUMENT
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.verifyFileIntegrity()).thenReturn(true);
         when(mPrintJob.isValid()).thenCallRealMethod();
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.DOCUMENT);
         when(mPrintJob.getFilename()).thenReturn(".pdf");
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PASS_PDF_AS_IS);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -46,7 +46,6 @@ public class PrintJobTest {
         *  Filename: .pdf
         *  FitMode: CLIP_CONTENT
         *  JobType: DOCUMENT
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_CLIP_CONTENT);
         assertTrue(mPrintJob.isValid());
@@ -56,7 +55,6 @@ public class PrintJobTest {
         *  Filename: .pdf
         *  FitMode: PRINT_FILL_PAGE
         *  JobType: DOCUMENT
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FILL_PAGE);
         assertTrue(mPrintJob.isValid());
@@ -66,7 +64,6 @@ public class PrintJobTest {
         *  Filename: .pdf
         *  FitMode: PRINT_FILL_PAGE
         *  JobType: DOCUMENT
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
         assertTrue(mPrintJob.isValid());
@@ -79,14 +76,12 @@ public class PrintJobTest {
         *  Filename: .jpg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.verifyFileIntegrity()).thenReturn(true);
         when(mPrintJob.isValid()).thenCallRealMethod();
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.IMAGE);
         when(mPrintJob.getFilename()).thenReturn(".jpg");
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -94,9 +89,7 @@ public class PrintJobTest {
         *  Filename: .jpg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -104,10 +97,8 @@ public class PrintJobTest {
         *  Filename: .jpg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FILL_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -115,9 +106,7 @@ public class PrintJobTest {
         *  Filename: .jpg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
     }
 
@@ -128,14 +117,12 @@ public class PrintJobTest {
         *  Filename: .jpeg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.verifyFileIntegrity()).thenReturn(true);
         when(mPrintJob.isValid()).thenCallRealMethod();
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.IMAGE);
         when(mPrintJob.getFilename()).thenReturn(".jpeg");
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -143,9 +130,7 @@ public class PrintJobTest {
         *  Filename: .jpeg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -153,10 +138,8 @@ public class PrintJobTest {
         *  Filename: .jpeg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FILL_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -164,9 +147,7 @@ public class PrintJobTest {
         *  Filename: .jpeg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
     }
 
@@ -177,14 +158,12 @@ public class PrintJobTest {
         *  Filename: .jpeg
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: PRINTER_MARGINS.
         * */
         when(mPrintJob.verifyFileIntegrity()).thenReturn(true);
         when(mPrintJob.isValid()).thenCallRealMethod();
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.IMAGE);
         when(mPrintJob.getFilename()).thenReturn(".png");
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FIT_TO_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -192,9 +171,7 @@ public class PrintJobTest {
         *  Filename: .png
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -202,10 +179,8 @@ public class PrintJobTest {
         *  Filename: .png
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FILL_PAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         assertTrue(mPrintJob.isValid());
 
         /*
@@ -213,9 +188,7 @@ public class PrintJobTest {
         *  Filename: .png
         *  FitMode: PRINT_FIT_TO_PAGE
         *  JobType: IMAGE
-        *  Margins: NO_MARGINS.
         * */
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
         assertTrue(mPrintJob.isValid());
     }
 
@@ -226,7 +199,6 @@ public class PrintJobTest {
         when(mPrintJob.getFilename()).thenReturn(".jpg");
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PRINT_FILL_PAGE);
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.DOCUMENT);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
         when(mPrintJob.isValid()).thenCallRealMethod();
         assertFalse(mPrintJob.isValid());
 
@@ -243,7 +215,6 @@ public class PrintJobTest {
         when(mPrintJob.isValid()).thenCallRealMethod();
         when(mPrintJob.getFilename()).thenReturn(".jpg");
         when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.IMAGE);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.PRINTER_MARGINS);
 
         when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PASS_PDF_AS_IS);
         assertFalse(mPrintJob.isValid());
@@ -267,15 +238,4 @@ public class PrintJobTest {
         assertFalse(mPrintJob.isValid());
     }
 
-    @Test
-    public void testPrintJob_Document_WrongMargins() {
-        when(mPrintJob.verifyFileIntegrity()).thenReturn(true);
-        when(mPrintJob.getFilename()).thenReturn(".pdf");
-        when(mPrintJob.getFitMode()).thenReturn(PrintingConstants.FitMode.PASS_PDF_AS_IS);
-        when(mPrintJob.getMimeType()).thenReturn(PrintingConstants.JobType.DOCUMENT);
-        when(mPrintJob.getMarginsMode()).thenReturn(PrintingConstants.MarginsMode.NO_MARGINS);
-        when(mPrintJob.isValid()).thenCallRealMethod();
-
-        assertFalse(mPrintJob.isValid());
-    }
 }

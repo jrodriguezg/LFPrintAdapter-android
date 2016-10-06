@@ -1,6 +1,9 @@
 package com.jmrodrigg.printing;
 
-import com.jmrodrigg.printing.model.PrintJob;
+import com.hp.lfprintadapter.LFPrintAdapter;
+import com.hp.lfprintadapter.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintingConstants;
+
 
 import android.app.Activity;
 import android.content.Context;
@@ -110,7 +113,7 @@ public class PrintingSettingsActivity extends Activity {
                 try {
                     PrintManager printManager = (PrintManager) getSystemService(
                             Context.PRINT_SERVICE);
-                    printManager.print("document", new PrintAdapter(this, mPrintJob), null);
+                    printManager.print("document", new LFPrintAdapter(this, mPrintJob), null);
                 } catch (IOException ex) {
                     Log.e(PrintingConstants.LOG_TAG,"IOException while initializing the PrintAdapter.");
                 }
@@ -118,7 +121,7 @@ public class PrintingSettingsActivity extends Activity {
 
             case IMAGE:
                 try{
-                    com.jmrodrigg.printing.helper.RollHelper pHelper = new com.jmrodrigg.printing.helper.RollHelper(this.getBaseContext());
+                    com.hp.lfprintadapter.LFRollHelper pHelper = new com.hp.lfprintadapter.LFRollHelper(this.getBaseContext());
 
                     if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);

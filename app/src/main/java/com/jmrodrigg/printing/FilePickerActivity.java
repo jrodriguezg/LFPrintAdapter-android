@@ -2,8 +2,10 @@ package com.jmrodrigg.printing;
 
 import com.jmrodrigg.printing.controller.FileList;
 import com.jmrodrigg.printing.controller.FileListAdapter;
-import com.jmrodrigg.printing.model.PrintJob;
 import com.jmrodrigg.printing.samples.PrintCustomContent;
+
+import com.hp.lfprintadapter.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintingConstants;
 
 import android.Manifest;
 import android.app.ListActivity;

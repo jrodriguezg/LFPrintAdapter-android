@@ -1,17 +1,9 @@
-package com.jmrodrigg.printing;
-
-import com.jmrodrigg.printing.model.PrintJob;
+package com.hp.lfprintadapter;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.Region;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
@@ -26,6 +18,10 @@ import android.print.pdf.PrintedPdfDocument;
 import android.util.Log;
 import android.util.SparseIntArray;
 
+import com.hp.lfprintadapter.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintingConstants;
+import com.hp.lfprintadapter.model.Renderer;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -36,11 +32,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.hp.lfprintadapter.model.PrintingConstants.DUMP_FILE;
+
 /**
  * Author: jrodriguezg
  * Date: 12/04/2015.
  */
-public class PrintAdapter extends PrintDocumentAdapter implements Constants {
+public class LFPrintAdapter extends PrintDocumentAdapter {
     private static final String LOG_TAG = "PrintAdapter";
 
     private static final int MILS_PER_INCH = 1000;
@@ -60,7 +58,7 @@ public class PrintAdapter extends PrintDocumentAdapter implements Constants {
 
     private PrintedPdfDocument mDocument;
 
-    public PrintAdapter(Activity act, PrintJob printJob) throws IOException {
+    public LFPrintAdapter(Activity act, PrintJob printJob) throws IOException {
         mParentActivity = act;
 
         File f = new File(printJob.getUri());

@@ -1,6 +1,8 @@
 package com.jmrodrigg.printing;
 
-import com.jmrodrigg.printing.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintJob;
+import com.hp.lfprintadapter.model.PrintingConstants;
+import com.hp.lfprintadapter.model.Renderer;
 
 import android.app.Activity;
 import android.content.Intent;

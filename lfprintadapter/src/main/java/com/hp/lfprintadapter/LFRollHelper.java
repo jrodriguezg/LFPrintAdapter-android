@@ -1,4 +1,4 @@
-package com.jmrodrigg.printing.helper;
+package com.hp.lfprintadapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,6 +11,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.pdf.PdfDocument.Page;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,7 +25,8 @@ import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.print.pdf.PrintedPdfDocument;
 import android.util.Log;
-import android.graphics.pdf.PdfDocument.Page;
+
+import com.hp.lfprintadapter.model.RollHelperConstants;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -36,7 +38,7 @@ import java.util.Calendar;
  * Author: jsanchez
  * Date: 18/11/2015.
  */
-public class RollHelper implements RollHelperConstants {
+public class LFRollHelper implements RollHelperConstants {
     private static final String LOG_TAG = "RollHelper";
     // will be <= 300 dpi on A4 (8.3×11.7) paper (worst case of 150 dpi)
     private final static int MAX_PRINT_SIZE = 3500;
@@ -86,7 +88,7 @@ public class RollHelper implements RollHelperConstants {
 
     boolean mIsPreview;
 
-    public RollHelper(Context context) {
+    public LFRollHelper(Context context) {
         mContext = context;
     }
 
@@ -515,7 +517,7 @@ public class RollHelper implements RollHelperConstants {
                                                 new Rect(0, 0, TILE_SIZE/options.inSampleSize, TILE_SIZE/options.inSampleSize),
                                                 new Rect(tileBounds.left, tileBounds.top, tileBounds.right, tileBounds.bottom),
                                                 null);
-                    
+
 //                    Log.d(LOG_TAG,"Drawing tile on " + i + "x" + j + ". Bitmap: " + tile.getWidth() + "x" + tile.getHeight());
                     tile.recycle();
                 }
@@ -531,12 +533,12 @@ public class RollHelper implements RollHelperConstants {
     }
 
     /**
-     * Creates a {@link android.graphics.BitmapFactory.Options} object with the rendering parameters.
+     * Creates a {@link BitmapFactory.Options} object with the rendering parameters.
      * This rendering parameters can be set by modifying the constants in {@link RollHelperConstants}.
      * Please note that the modification of this parameters will impact over the rendering time of the
      * print job.
      *
-     * @return The {@link android.graphics.BitmapFactory.Options} that have been set.
+     * @return The {@link BitmapFactory.Options} that have been set.
      */
     private BitmapFactory.Options setBitmapOptions() {
         BitmapFactory.Options options = new BitmapFactory.Options();

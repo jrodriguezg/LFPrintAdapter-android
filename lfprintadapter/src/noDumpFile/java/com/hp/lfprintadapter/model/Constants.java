@@ -1,4 +1,4 @@
-package com.jmrodrigg.printing;
+package com.hp.lfprintadapter.model;
 
 /**
  * Author: jrodriguezg
@@ -6,4 +6,6 @@ package com.jmrodrigg.printing;
  */
 public interface Constants {
     boolean DUMP_FILE           = false;
+
+    public static final String LOG_TAG = "LFPrintAdapter";
 }

@@ -14,7 +14,7 @@ package com.jmrodrigg.printing.samples;
         * See the License for the specific language governing permissions and
         * limitations under the License.
         */
-import com.jmrodrigg.printing.PrintingConstants;
+import com.hp.lfprintadapter.model.PrintingConstants;
 import com.jmrodrigg.printing.R;
 
 import android.app.ListActivity;

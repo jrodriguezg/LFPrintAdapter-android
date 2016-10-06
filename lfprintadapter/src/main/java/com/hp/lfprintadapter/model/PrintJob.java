@@ -1,6 +1,4 @@
-package com.jmrodrigg.printing.model;
-
-import com.jmrodrigg.printing.PrintingConstants;
+package com.hp.lfprintadapter.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
