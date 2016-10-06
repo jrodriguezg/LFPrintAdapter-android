@@ -1,8 +1,8 @@
 package com.jmrodrigg.printing;
 
-import com.hp.lfprintadapter.LFPrintAdapter;
-import com.hp.lfprintadapter.model.PrintJob;
-import com.hp.lfprintadapter.model.PrintingConstants;
+import com.jmrodrigg.lfprintadapter.LFPrintAdapter;
+import com.jmrodrigg.lfprintadapter.model.PrintJob;
+import com.jmrodrigg.lfprintadapter.model.PrintingConstants;
 
 
 import android.app.Activity;
@@ -121,7 +121,7 @@ public class PrintingSettingsActivity extends Activity {
 
             case IMAGE:
                 try{
-                    com.hp.lfprintadapter.LFRollHelper pHelper = new com.hp.lfprintadapter.LFRollHelper(this.getBaseContext());
+                    com.jmrodrigg.lfprintadapter.LFRollHelper pHelper = new com.jmrodrigg.lfprintadapter.LFRollHelper(this.getBaseContext());
 
                     if (mPrintJob.getFitMode().equals(PrintingConstants.FitMode.PRINT_FILL_PAGE)) {
                         pHelper.setScaleMode(PrintHelper.SCALE_MODE_FILL);
