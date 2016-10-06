@@ -45,8 +45,8 @@ try {
 ```
 
 ## More info
-- Have a look at the [Starter Guide] for a brief summary of Android's print API and how to start implementing print functionality in your app. 
-- For a more detailed documentation on Android's print API, visit the [Android Developers' portal] and the [package summary].
+- Have a look at the [Starter Guide][6] for a brief summary of Android's print API and how to start implementing print functionality in your app. 
+- For a more detailed documentation on Android's print API, visit the [Android Developers' portal][7] and the [package summary][8].
 
 [1]: /lfprintadapter/src/main/java/com/hp/lfprintadapter/LFPrintAdapter.java
 [2]: https://developer.android.com/reference/android/print/PrintDocumentAdapter.html
