@@ -3,7 +3,7 @@ Custom Implementation of Android's [PrintDocumentAdapter][2] ready to be used in
 Includes a sample app that allows the user to browse their local storage, select and print a PDF, JPEG or PNG file.
 
 ## Purpose
-The [LFPrintAdapter class][1] is an implementation of Android's [PrintDocumentAdapter][2] methods that abstracts you from implementing the [onLayout()] and [onWrite()] methods. 
+The [LFPrintAdapter class][1] is an implementation of Android's [PrintDocumentAdapter][2] methods that abstracts you from implementing the _onLayout()_ and _onWrite()_ methods. 
 
 This implementation is supported on a Parcelable [PrintJob][3] class that is intended to encapsulate all the attributes needed to compose the print job during the [LFPrintAdapter][1] lifecycle. You may extend it to accommodate its attributes to your app's purpose.
 
