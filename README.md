@@ -23,16 +23,37 @@ In order to use the provided [LFPrintAdapter class][1], you must specify it when
 
 ```java
 try {
-    PrintManager printManager = (PrintManager) getSystemService(
-            Context.PRINT_SERVICE);
+    PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
     printManager.print("my_document_name", new LFPrintAdapter(this, mPrintJob), null);
 } catch (IOException ex) {
-    Log.e(PrintingConstants.LOG_TAG,"IOException while initializing the PrintAdapter.");
+    // TODO Catch the exception properly.
 }
 ```
+
+On the other hand, in order to integrate the [LFRollHelper class][9], you must create an object, set a scale mode (FIT or FILL) and call the _printBitmap()_ method as detailed below: 
+
+```java
+try {
+    LFRollHelper pHelper = new LFRollHelper(this.getBaseContext());
+    pHelper.setScaleMode(PrintHelper.SCALE_MODE_FIT);
+    
+    File f = new File(mPrintJob.getUri());
+    pHelper.printBitmap("image", Uri.fromFile(f), null);
+} catch (Exception ex) {
+    // TODO Catch the exception properly.
+}
+```
+
+## More info
+- Have a look at the [Starter Guide] for a brief summary of Android's print API and how to start implementing print functionality in your app. 
+- For a more detailed documentation on Android's print API, visit the [Android Developers' portal] and the [package summary].
 
 [1]: /lfprintadapter/src/main/java/com/hp/lfprintadapter/LFPrintAdapter.java
 [2]: https://developer.android.com/reference/android/print/PrintDocumentAdapter.html
 [3]: /com/hp/lfprintadapter/model/PrintJob.java
 [4]: /lfprintadapter
 [5]: /app
+[6]: /Starter_Guide.pdf
+[7]: https://developer.android.com/training/printing/index.html
+[8]: https://developer.android.com/reference/android/print/package-summary.html
+[9]: /lfprintadapter/src/main/java/com/hp/lfprintadapter/LFRollHelper.java
