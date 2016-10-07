@@ -58,6 +58,12 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
 
     private PrintedPdfDocument mDocument;
 
+    /**
+     * Constructor.
+     * @param act Reference to the parent activity that calls the PrintAdapter.
+     * @param printJob PrintJob object containing the content to be printed and its settings.
+     * @throws IOException
+     */
     public LFPrintAdapter(Activity act, PrintJob printJob) throws IOException {
         mParentActivity = act;
 
@@ -71,6 +77,14 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         print_mode = printJob.getFitMode();
     }
 
+    /**
+     * Implementation of onLayout() callback. It is called every time the print attributes change in order to layout the content according to the selected settings.
+     * @param oldAttributes Old print attributes.
+     * @param newAttributes New print attributes.
+     * @param cancellationSignal Signal for observing cancellation events.
+     * @param callback Callback to inform the system when for the layout result.
+     * @param extras Additional information, in form of Bundle, about how to layout the content.
+     */
     @Override
     public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras) {
 
@@ -129,12 +143,23 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         }
     }
 
+    /**
+     * Computes the page count for the document to be printed.
+     * @return The number of pages of the document.
+     */
     private int computePageCount() {
         //Just print current page:
         mTotalPages = mRenderer.getPageCount();
         return mTotalPages;
     }
 
+    /**
+     * Implementation of onWrite() callback. It is called when the content should be written in the form of a PDF file to be passed to a provided destination. This method is called on the main thread.
+     * @param pageRanges The pages that have been selected to print. In ascending order.
+     * @param destination File descriptor to which the generated PDF file must be written.
+     * @param cancellationSignal Signal for observing cancellation events.
+     * @param callback Callback to inform the system when for the write result.
+     */
     @Override
     public void onWrite(PageRange[] pageRanges, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
 
@@ -275,6 +300,12 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         }
     }
 
+
+    /**
+     * This function writes the original PDF file to the provided file descriptor as is, without applying any change on it.
+     * @param destination File descriptor to which the generated PDF file must be written.
+     * @throws IOException
+     */
     private void printPdfAsIs(ParcelFileDescriptor destination) throws IOException {
         File f = new File(mPdfFile);
         InputStream in = new FileInputStream(f);
@@ -286,6 +317,13 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         out.close();
     }
 
+
+    /**
+     * Copies the content of an InputStream into an Output Stream.
+     * @param in The InputStream from which the data is read.
+     * @param out The OutputStream to which the data is written.
+     * @throws IOException
+     */
     private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
@@ -294,6 +332,11 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         }
     }
 
+    /**
+     * Function that converts the selected pages to be written in form of PageRange array.
+     * @param writtenPages a SparseIntArray that contains the pages that must be written.
+     * @return a PageRange array containing the resulting ranges.
+     */
     private PageRange[] computeWrittenPageRanges(SparseIntArray writtenPages) {
         List<PageRange> pageRanges = new ArrayList<>();
 
@@ -320,6 +363,12 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
         return pageRangesArray;
     }
 
+    /**
+     * Checks if a given page number is contained in a PageRange array.
+     * @param pageRanges The PageRange array of written pages.
+     * @param numPage The page number to check against the PageRange array.
+     * @return true if the page is contained in the PageRange array. False otherwise.
+     */
     private boolean containsPage(PageRange [] pageRanges,int numPage) {
         for(PageRange pr:pageRanges) {
             if((numPage >= pr.getStart()) && (numPage <= pr.getEnd())) return true;
