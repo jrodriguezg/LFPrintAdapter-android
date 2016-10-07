@@ -25,6 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import static com.jmrodrigg.printing.model.Constants.ACTION_PRINT;
+import static com.jmrodrigg.printing.model.Constants.PRINT_JOB_CLASS;
+
 /**
  * Author: jrodriguezg
  * Date: 12/04/2015.
@@ -43,7 +46,7 @@ public class Viewer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
 
-        mPrintJob = getIntent().getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
+        mPrintJob = getIntent().getParcelableExtra(PRINT_JOB_CLASS);
 
         // ImageView:
         mView = (ImageView) findViewById(R.id.imageView);
@@ -154,8 +157,8 @@ public class Viewer extends Activity {
         switch(selectedItem.getItemId()) {
             case R.id.action_print:
                 intent = new Intent(this,PrintingSettingsActivity.class);
-                intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
-                startActivityForResult(intent,PrintingConstants.ACTION_PRINT);
+                intent.putExtra(PRINT_JOB_CLASS,mPrintJob);
+                startActivityForResult(intent,ACTION_PRINT);
                 return true;
         }
 
@@ -165,9 +168,9 @@ public class Viewer extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         switch (requestCode) {
-            case PrintingConstants.ACTION_PRINT:
+            case ACTION_PRINT:
                 // Update the print job with the settings selected:
-                mPrintJob = intent.getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
+                mPrintJob = intent.getParcelableExtra(PRINT_JOB_CLASS);
                 break;
         }
     }

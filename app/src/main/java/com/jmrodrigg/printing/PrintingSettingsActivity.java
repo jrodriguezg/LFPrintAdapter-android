@@ -21,6 +21,8 @@ import android.widget.RadioButton;
 import java.io.File;
 import java.io.IOException;
 
+import static com.jmrodrigg.printing.model.Constants.PRINT_JOB_CLASS;
+
 /**
  * Author: jrodriguezg
  * Date: 11/05/2015.
@@ -38,7 +40,7 @@ public class PrintingSettingsActivity extends Activity {
 
         this.setTitle(getString(R.string.title_activity_printing_settings));
 
-        mPrintJob = getIntent().getParcelableExtra(PrintingConstants.PRINT_JOB_CLASS);
+        mPrintJob = getIntent().getParcelableExtra(PRINT_JOB_CLASS);
 
         // Init components:
         initComponents();
@@ -158,7 +160,7 @@ public class PrintingSettingsActivity extends Activity {
 
     private void finishActivity() {
         Intent intent = new Intent();
-        intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,mPrintJob);
+        intent.putExtra(PRINT_JOB_CLASS,mPrintJob);
         setResult(RESULT_OK,intent);
         finish();
     }

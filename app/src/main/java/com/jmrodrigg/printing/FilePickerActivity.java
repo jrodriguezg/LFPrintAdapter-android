@@ -24,6 +24,9 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import static com.jmrodrigg.printing.model.Constants.PERMISSION_EXT_STORAGE_READ;
+import static com.jmrodrigg.printing.model.Constants.PRINT_JOB_CLASS;
+
 /**
  * Author: jrodriguezg
  * Date: 02/05/2016.
@@ -45,7 +48,7 @@ public class FilePickerActivity extends ListActivity {
         // Check permissions to READ External storage:
         if(Build.VERSION.SDK_INT >= 23) {
             if ((ContextCompat.checkSelfPermission(FilePickerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PrintingConstants.PERMISSION_EXT_STORAGE_READ);
+                ActivityCompat.requestPermissions(FilePickerActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_EXT_STORAGE_READ);
             } else
                 fillList();
         } else
@@ -55,7 +58,7 @@ public class FilePickerActivity extends ListActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case PrintingConstants.PERMISSION_EXT_STORAGE_READ:
+            case PERMISSION_EXT_STORAGE_READ:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED))
                     fillList();
                 else
@@ -83,7 +86,7 @@ public class FilePickerActivity extends ListActivity {
                 job.setUri(fileName);
                 job.setFilename(selection.getName());
                 job.setMimeType(mimeType);
-                intent.putExtra(PrintingConstants.PRINT_JOB_CLASS,job);
+                intent.putExtra(PRINT_JOB_CLASS,job);
                 startActivityForResult(intent, 1);
 
             } else
