@@ -45,6 +45,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -399,8 +401,13 @@ public class PrintCustomContent extends ListActivity {
                                             destination.getFileDescriptor()));
 
                                     long date = Calendar.getInstance().getTime().getTime();
+
+                                    File folder = new File(Environment.getExternalStorageDirectory() + "/printing");
+                                    if (!folder.exists()) folder.mkdir();
+
                                     mPdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_MotoGP.pdf"));
                                     Log.d(PrintingConstants.LOG_TAG,"A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_MotoGP.pdf");
+
 
                                     // Compute which page ranges were written based on
                                     // the bookkeeping we maintained.

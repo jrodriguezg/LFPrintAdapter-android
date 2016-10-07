@@ -28,6 +28,7 @@ import android.util.Log;
 
 import com.jmrodrigg.lfprintadapter.model.RollHelperConstants;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -428,6 +429,10 @@ public class LFRollHelper implements RollHelperConstants {
                         if (DUMP_FILE) {
                             // Save a copy in the External storage for debugging purposes:
                             long date = Calendar.getInstance().getTime().getTime();
+
+                            File folder = new File(Environment.getExternalStorageDirectory() + "/printing");
+                            if (!folder.exists()) folder.mkdir();
+
                             pdfDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf"));
                             Log.d(LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + jobName + ".pdf");
                         }

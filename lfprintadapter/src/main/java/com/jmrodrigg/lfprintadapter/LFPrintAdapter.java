@@ -274,6 +274,10 @@ public class LFPrintAdapter extends PrintDocumentAdapter {
                 if (DUMP_FILE) {
                     // Save a copy in the External storage for debugging purposes:
                     long date = Calendar.getInstance().getTime().getTime();
+
+                    File folder = new File(Environment.getExternalStorageDirectory() + "/printing");
+                    if (!folder.exists()) folder.mkdir();
+
                     mDocument.writeTo(new FileOutputStream(Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName));
                     Log.d(LOG_TAG, "A copy has been stored on " + Environment.getExternalStorageDirectory() + "/printing/" + date + "_" + mPdfFileName);
                 }
