@@ -3,15 +3,17 @@ Custom Implementation of Android's [PrintDocumentAdapter][2] ready to be used in
 Includes a sample app that allows the user to browse their local storage, select and print a PDF, JPEG or PNG file.
 
 ## Purpose
-The [LFPrintAdapter class][1] is an implementation of Android's [PrintDocumentAdapter][2] methods that abstracts you from implementing the _onLayout()_ and _onWrite()_ methods. 
+The [lfprintadapter library][4] contains an is an implementation of Android's [PrintDocumentAdapter][2] methods that abstracts you from implementing the _onLayout()_ and _onWrite()_ methods. 
+
+The current print framework in Android has some constraints when printing images at high resolution in big media sizes such rolls, specially panoramic pictures. To improve the results, this library contains a helper ready to be used when printing image files.
 
 This implementation is supported on a Parcelable [PrintJob][3] class that is intended to encapsulate all the attributes needed to compose the print job during the [LFPrintAdapter][1] lifecycle. You may extend it to accommodate its attributes to your app's purpose.
-
+ 
 ## Content
 This repository is a Gradle project formed by two modules:
 
-- The [lfprintadapter library][4], that contains a custom implementation of Android's PrintDocumentAdapter and a class that improves the experience when printing on roll printers when printing images.
-- An [Android application][5] that acts as an example of how to use the lfprintadapter library. 
+- The [lfprintadapter library][4], that contains [LFPrintAdapter][1] and the [LFRollHelper][9] classes that improves the experience when printing on roll printers when printing images.
+- An [Android application][5] that acts as an example of how to use the [lfprintadapter library][4]. 
 
 The [lfprintadapter library][4] contains two flavours:
 + The _dumpFile_ flavour will make a copy of the print job (in form of PDF file) on the local device storage. The file will be copied under the /printing/ folder. 
